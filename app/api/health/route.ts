@@ -1,5 +1,5 @@
 // 診断用ヘルスチェック：Redis接続状態を確認する（値は返さず、キー名とpingのみ）。
-import { getClient, storeReady } from "@/lib/store/redis";
+import { getClient, storeReady, resolveStoreUrl } from "@/lib/store/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export async function GET() {
   const relatedKeys = Object.keys(process.env).filter((k) => /redis|kv|upstash|storage/i.test(k)).sort();
   // 値の“先頭スキーム”だけ（例 rediss:// / https://）を安全に覗く。
   const scheme = (v?: string) => (v ? String(v).split("://")[0].slice(0, 10) : null);
-  const urlScheme = scheme(process.env.REDIS_URL || process.env.KV_URL || "");
+  const urlScheme = scheme(resolveStoreUrl());
 
   let ping = "skip";
   let err = "";
