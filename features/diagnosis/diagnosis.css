@@ -1,0 +1,66 @@
+/* 診断タブ（features/diagnosis）専用スタイル。全てトークン参照。 */
+.d-hero{ background:var(--grad-hero); color:#fff; padding:24px 18px 20px; border-radius:0 0 24px 24px; box-shadow:var(--sh2); position:relative }
+.d-hero__brand{ font-size:13px; font-weight:var(--w-bold); display:flex; gap:6px; align-items:center; opacity:.95 }
+.d-hero h1{ font-size:20px; font-weight:var(--w-black); margin:11px 0 5px }
+.d-hero p{ font-size:13px; opacity:.94; margin:0 0 12px }
+.d-sec{ padding:18px 16px 0 }
+.d-sec h2{ font-size:14px; color:var(--navy); margin:2px 0 11px; font-weight:var(--w-black); padding-left:12px; position:relative }
+.d-sec h2::before{ content:""; position:absolute; left:0; top:2px; bottom:2px; width:4px; border-radius:3px; background:var(--grad-teal) }
+.d-qlabel{ font-size:calc(14.5px * var(--fs)); font-weight:var(--w-bold); margin:2px 0 8px; line-height:1.5 }
+.d-note{ font-size:12px; color:var(--muted); background:var(--panel); border-radius:10px; padding:9px 11px; line-height:1.6; margin-top:8px }
+
+/* 収集情報カード */
+.sb-t{ font-size:12px; font-weight:var(--w-bold); color:var(--accent-deep) }
+.sb-n{ font-size:15px; font-weight:var(--w-black); margin:4px 0 10px }
+.sb-area{ font-size:12px; color:var(--muted); font-weight:var(--w-med) }
+.sb-grid{ display:flex; flex-direction:column; gap:8px }
+.sb-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px }
+.sb-row>span{ color:var(--muted); display:flex; align-items:center; gap:6px }
+.sb-src{ font-size:9px; font-style:normal; background:var(--accent-soft); color:var(--accent-deep); border-radius:5px; padding:2px 5px }
+.sb-src.man{ background:#fdf1e3; color:#b7791f }
+.sb-in{ width:96px; border:1.5px solid var(--line); border-radius:8px; padding:6px 8px; font-size:13px; font-family:inherit; text-align:right }
+
+/* 1000人シミュレーション */
+.sim{ background:linear-gradient(160deg,var(--accent-soft),var(--surface)); border:1px solid var(--line); border-radius:var(--r-card); padding:15px; margin-top:11px; box-shadow:var(--sh1) }
+.sim__head{ display:flex; align-items:center; justify-content:space-between }
+.sim__title{ font-size:14px; font-weight:var(--w-black); color:var(--navy) }
+.sim__pred{ font-size:10px; font-weight:var(--w-bold); color:var(--accent-deep); background:var(--surface); border-radius:6px; padding:3px 8px }
+.sim__biz{ display:flex; align-items:center; gap:8px; margin:12px 0 }
+.sim__biz select{ flex:1; border:1.5px solid var(--line); border-radius:9px; padding:8px 10px; font-family:inherit; font-size:13px; background:var(--surface); color:var(--ink) }
+.sim__lead{ font-size:12px; color:var(--muted) }
+.sim__num{ margin:4px 0 }
+.sim__num b{ font-size:30px; font-weight:var(--w-black); color:var(--accent-deep) }
+.sim__num span{ font-size:12px; color:var(--muted); margin-left:4px }
+.sim__bar{ height:9px; background:var(--line); border-radius:var(--r-pill); overflow:hidden; margin:6px 0 }
+.sim__bar>i{ display:block; height:100%; background:var(--grad-teal); border-radius:var(--r-pill) }
+.sim__pct{ font-size:12px; font-weight:var(--w-bold) }
+.sim__adj{ font-size:10px; color:var(--muted); font-weight:var(--w-med) }
+.sim__visit{ font-size:12.5px; margin-top:6px }
+.sim__visit b{ color:var(--accent-deep) }
+.sim__visit-n{ font-size:10.5px; color:var(--muted) }
+.sim__why{ font-size:12px; margin-top:8px; background:var(--surface); border-radius:10px; padding:9px 10px; line-height:1.6 }
+.sim__lift{ margin-top:10px }
+.sim__lift-h{ font-size:12px; font-weight:var(--w-bold); margin-bottom:6px }
+.sim__lift-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; margin:3px 0 }
+.sim__lift-it{ color:var(--muted); font-size:11px }
+.sim__lift-g b{ color:var(--accent-deep) }
+.sim__lift-ceil{ font-size:12px; font-weight:var(--w-bold); color:var(--accent-deep); margin-top:6px }
+.sim__foot{ font-size:10px; color:var(--faint); margin-top:8px }
+.sim__pickhint{ font-size:12.5px; color:var(--muted); margin-top:10px }
+
+/* AI総評のセクションカード */
+.aisec{ border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:12px; padding:12px 14px; background:var(--panel); margin-bottom:10px }
+.aisec__h{ font-size:13.5px; font-weight:var(--w-black); color:var(--accent-deep); margin-bottom:5px }
+.verdict-bad{ background:#fff5f0; color:#b4460f; border-radius:10px; padding:10px 12px; font-size:13px; font-weight:var(--w-bold) }
+
+/* 興味ゲート */
+.qi{ margin-top:11px; background:var(--surface); border:1px dashed #bfe3dc; border-radius:12px; padding:11px }
+.qi__q{ font-size:12px; font-weight:var(--w-bold); color:var(--accent-deep); margin-bottom:8px; text-align:center }
+.qi__btns{ display:flex; gap:8px }
+.qi__btns button{ flex:1; border:none; border-radius:9px; padding:9px; font-family:inherit; font-size:12px; font-weight:var(--w-bold); cursor:pointer }
+.qi__yes{ background:var(--grad-teal); color:#fff }
+.qi__no{ background:var(--line); color:var(--muted) }
+.qi__open{ display:flex; flex-direction:column; gap:8px }
+.qi__skip{ font-size:12px; color:var(--muted); text-align:center }
+.qi__reopen{ background:none; border:none; color:var(--accent-deep); font-weight:var(--w-bold); font-size:12px; cursor:pointer; font-family:inherit; text-decoration:underline }
+.fx-guide{ background:var(--accent-soft); color:var(--accent-deep); border:none; border-radius:9px; padding:9px; font-family:inherit; font-size:12px; font-weight:var(--w-bold); cursor:pointer }

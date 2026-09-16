@@ -1,0 +1,217 @@
+<title>集客ラボ 使い方ガイド</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --ground:#eef3f2; --surface:#ffffff; --panel:#f5faf9;
+  --ink:#16222b; --muted:#5d7278; --faint:#8a9aa0; --line:#e3ebe9;
+  --teal:#0e9f8e; --teal-deep:#0b6e63; --teal-soft:#e6f4f1; --navy:#1e3a57; --pin:#e0574a;
+  --g-blue:#4285f4; --g-yellow:#f0a400; --g-green:#34a853; --g-red:#ea4335;
+  --sh1:0 2px 14px rgba(18,50,79,.07); --sh2:0 18px 44px rgba(11,60,79,.16);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0d1618; --surface:#141f21; --panel:#101a1b;
+  --ink:#e8f0ee; --muted:#93a6a7; --faint:#6b8082; --line:#233032;
+  --teal:#2fc0ad; --teal-deep:#63d6c6; --teal-soft:#123029; --navy:#9fc2dc; --pin:#f0837a;
+  --g-blue:#7aa8f7; --g-yellow:#f5c451; --g-green:#5cc274; --g-red:#f0837a;
+  --sh1:0 2px 14px rgba(0,0,0,.4); --sh2:0 18px 44px rgba(0,0,0,.5);
+}}
+:root[data-theme="dark"]{
+  --ground:#0d1618; --surface:#141f21; --panel:#101a1b;
+  --ink:#e8f0ee; --muted:#93a6a7; --faint:#6b8082; --line:#233032;
+  --teal:#2fc0ad; --teal-deep:#63d6c6; --teal-soft:#123029; --navy:#9fc2dc; --pin:#f0837a;
+  --g-blue:#7aa8f7; --g-yellow:#f5c451; --g-green:#5cc274; --g-red:#f0837a;
+  --sh1:0 2px 14px rgba(0,0,0,.4); --sh2:0 18px 44px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);line-height:1.75;
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Segoe UI","Meiryo",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:660px;margin:0 auto;padding:0 18px}
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;fill:none;stroke:currentColor;
+  stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* hero */
+header{background:linear-gradient(155deg,#0d2a46 0%,#0e6f7e 58%,#13b8a0 128%);color:#fff;
+  border-radius:0 0 26px 26px;box-shadow:var(--sh2);margin-bottom:8px}
+.hero{max-width:660px;margin:0 auto;padding:34px 22px 30px}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;
+  letter-spacing:.12em;background:rgba(255,255,255,.16);padding:6px 13px;border-radius:999px}
+.eyebrow .ico{width:15px;height:15px;stroke:#fff;stroke-width:2.1}
+h1{font-size:clamp(25px,6vw,33px);font-weight:900;letter-spacing:-.02em;line-height:1.25;margin:18px 0 8px;text-wrap:balance}
+.lede{font-size:15px;opacity:.95;margin:0;max-width:26em}
+
+/* section */
+section{padding:30px 0 4px}
+.kick{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);margin:0 0 4px}
+h2{font-size:21px;font-weight:850;letter-spacing:-.01em;margin:0 0 16px}
+.intro{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--sh1);font-size:14.5px}
+.intro b{color:var(--teal-deep)}
+
+/* steps */
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{display:grid;grid-template-columns:46px 1fr;gap:15px;background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;padding:17px 19px;box-shadow:var(--sh1)}
+.step .n{font-size:23px;font-weight:900;color:var(--teal);font-variant-numeric:tabular-nums;line-height:1}
+.step h3{margin:0 0 4px;font-size:16px;font-weight:800}
+.step p{margin:0;font-size:13.5px;color:var(--muted)}
+
+/* feature cards */
+.feat{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 19px;box-shadow:var(--sh1);
+  border-left:4px solid var(--teal)}
+.card .hd{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.card .badge{width:38px;height:38px;border-radius:11px;background:var(--teal-soft);color:var(--teal-deep);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card .badge .ico{width:21px;height:21px}
+.card .hd h3{margin:0;font-size:16.5px;font-weight:850}
+.card .hd .tag{font-size:11px;font-weight:800;color:var(--muted)}
+.card p{margin:0 0 8px;font-size:13.5px;color:var(--ink)}
+.card ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.7}
+.card ul b{color:var(--ink)}
+
+/* 4 forces */
+.forces{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.force{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700}
+.force i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.force small{color:var(--muted);font-weight:500}
+
+/* tips */
+.tips{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.tips{grid-template-columns:1fr}}
+.tip{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 17px;box-shadow:var(--sh1)}
+.tip .h{display:flex;align-items:center;gap:9px;font-weight:800;font-size:14px;margin-bottom:5px}
+.tip .h .ico{width:18px;height:18px;color:var(--teal-deep)}
+.tip p{margin:0;font-size:12.5px;color:var(--muted)}
+
+/* notes */
+.notes{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--pin);border-radius:14px;padding:16px 19px}
+.notes .h{font-weight:800;font-size:14px;margin:0 0 8px}
+.notes ul{margin:0;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.8}
+
+footer{margin:34px 0 46px;text-align:center;color:var(--faint);font-size:12.5px}
+footer .b{display:inline-flex;align-items:center;gap:6px;color:var(--teal-deep);font-weight:800;font-size:13.5px;margin-bottom:4px}
+footer .b .ico{width:15px;height:15px}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4v-4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5.5C10.4 4.4 8 3.8 5.5 3.8V17c2.5 0 4.9.6 6.5 1.7 1.6-1.1 4-1.7 6.5-1.7V3.8c-2.5 0-4.9.6-6.5 1.7zM12 5.5v13.2"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M4.2 7.5l2 1.2M17.8 15.3l2 1.2M4.2 16.5l2-1.2M17.8 8.7l2-1.2"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M5 7V5h14v2M12 5v14M9 19h6"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 15l6-6M8.5 12l-1.8 1.8a3 3 0 0 0 4.2 4.2L12.7 16M15.5 12l1.8-1.8a3 3 0 0 0-4.2-4.2L11.3 8"/></symbol>
+</svg>
+
+<header>
+  <div class="hero">
+    <span class="eyebrow"><svg class="ico"><use href="#i-pin"/></svg> マップ集客ラボ</span>
+    <h1>はじめての使い方ガイド</h1>
+    <p class="lede">Googleマップの集客を、スマホだけで。むずかしい知識はいりません。3ステップで今日から。</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="intro">
+      このアプリは、<b>「診断」で今の状態を知り</b>、<b>「AIに相談」で次の一手を決め</b>、<b>「ガイド」で直し方を学ぶ</b> — この3つでGoogleマップの集客をよくしていく道具です。お店のGoogleページ（ビジネスプロフィール）を見ながら進めるだけでOK。
+    </div>
+  </section>
+
+  <section>
+    <div class="kick">はじめかた</div>
+    <h2>3ステップで開始</h2>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><div>
+        <h3>届いたリンク／QRを開く</h3>
+        <p>担当者からのリンクをタップ、またはQRコードをスマホのカメラで読み取ります。アプリのインストールは不要です。</p>
+      </div></div>
+      <div class="step"><div class="n">02</div><div>
+        <h3>かんたん設定（約30秒）</h3>
+        <p>AIの「話し方（方言）」と「ニュアンス」を選び、よければお店の名前かGoogleマップのURLを入力。空欄でも進めます（入れると診断がより具体的になります）。</p>
+      </div></div>
+      <div class="step"><div class="n">03</div><div>
+        <h3>3つのタブが登場</h3>
+        <p>画面の下に「診断・相談・ガイド」の3つが出ます。まずは左の「診断」から始めるのがおすすめです。</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kick">3つの機能</div>
+    <h2>できること</h2>
+    <div class="feat">
+
+      <div class="card">
+        <div class="hd"><span class="badge"><svg class="ico"><use href="#i-search"/></svg></span>
+          <div><h3>診断</h3><div class="tag">今の現在地をチェック</div></div></div>
+        <p>12問に答えるだけ。お店の「集客の4つの力」の強み・弱みが見え、AIが<b>「できていること・足りないこと・直すとどうなるか」</b>を評価します（点数ではなく理由で）。</p>
+        <ul>
+          <li><b>6問</b>で結果が見え始め、<b>全問</b>でAI診断が受けられます</li>
+          <li>気になった項目は<b>その場で相談・ガイド</b>へ進めます</li>
+          <li>業種を選ぶと<b>「1000人シミュレーション」</b>で来店予測も</li>
+        </ul>
+        <div class="forces">
+          <span class="force"><i style="background:var(--g-blue)"></i>見つかる<small>／表示</small></span>
+          <span class="force"><i style="background:var(--g-yellow)"></i>選ばれる<small>／比較</small></span>
+          <span class="force"><i style="background:var(--g-green)"></i>来店<small>／行動</small></span>
+          <span class="force"><i style="background:var(--g-red)"></i>AI検索<small>／おすすめ</small></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><span class="badge"><svg class="ico"><use href="#i-chat"/></svg></span>
+          <div><h3>AIに相談</h3><div class="tag">次の一手を、一緒に決める</div></div></div>
+        <p>診断の結果をふまえて、チャットで気軽に相談できます。何を聞けばいいか分からなくても大丈夫。</p>
+        <ul>
+          <li>「<b>今日やることは？</b>」「<b>最優先の3手は？</b>」などのボタンからすぐ質問</li>
+          <li>もちろん自由入力もOK。過去の質問は下に残ります</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="hd"><span class="badge"><svg class="ico"><use href="#i-book"/></svg></span>
+          <div><h3>MAPガイド</h3><div class="tag">直し方を学ぶ</div></div></div>
+        <p>基本情報・写真・クチコミ・投稿・メニュー・予約導線・AI検索・外部掲載の<b>8テーマ</b>を、手順と実際の画面つきで解説。</p>
+        <ul>
+          <li>「何をする？なぜ効く？コツは？」まで<b>やさしい言葉</b>で</li>
+          <li>最後まで読むと<b>「完読」</b>マークがつきます</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="kick">便利な使い方</div>
+    <h2>もっと快適に</h2>
+    <div class="tips">
+      <div class="tip"><div class="h"><svg class="ico"><use href="#i-type"/></svg>文字サイズ</div>
+        <p>画面上部で「小・中・大」を切り替え。見やすい大きさでどうぞ。</p></div>
+      <div class="tip"><div class="h"><svg class="ico"><use href="#i-gear"/></svg>話し方の変更</div>
+        <p>右上の設定（⚙️）から、AIの方言・ニュアンスをいつでも変えられます。</p></div>
+      <div class="tip"><div class="h"><svg class="ico"><use href="#i-link"/></svg>お店の情報</div>
+        <p>お店の名前・URLを入れると、あなたのお店に合わせた診断・助言になります。</p></div>
+      <div class="tip"><div class="h"><svg class="ico"><use href="#i-search"/></svg>迷ったら</div>
+        <p>まず「診断」→ 出てきた弱点を「相談」→ 直し方を「ガイド」、の順が王道です。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="notes">
+      <div class="h">🛡 安心して使うために</div>
+      <ul>
+        <li>効果は<b>一般的な傾向</b>であり、成果を保証するものではありません。</li>
+        <li>これは<b>「簡易セルフ診断」</b>です（本格的な診断は担当者へご相談ください）。</li>
+        <li>クチコミの集め方など、踏み込んだ集客テクニックは扱いません。正しく健全な運用を第一にしています。</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <div class="b"><svg class="ico"><use href="#i-pin"/></svg>マップ集客ラボ</div>
+    <div>うまくいかない時・もっと詳しく知りたい時は、担当者までお気軽にどうぞ。</div>
+  </footer>
+
+</div>

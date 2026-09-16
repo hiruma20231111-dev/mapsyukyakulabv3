@@ -1,0 +1,31 @@
+/* デザイントークン（唯一の"見た目の源"）を読み込む */
+@import "../design/tokens.css";
+/* 共通UI部品のスタイル */
+@import "../components/ui/ui.css";
+/* 機能セクションのスタイル */
+@import "../features/guide/guide.css";
+@import "../features/diagnosis/diagnosis.css";
+@import "../features/consult/consult.css";
+@import "../features/onboarding/onboarding.css";
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0 }
+html,body{ margin:0; padding:0 }
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font);
+  line-height:1.6;
+  -webkit-text-size-adjust:100%;
+  -webkit-font-smoothing:antialiased;
+}
+a{ color:var(--accent-deep); text-decoration:none }
+
+/* アプリの器（モバイル幅・中央寄せ）。v1踏襲 */
+.app{
+  max-width:520px;
+  margin:0 auto;
+  min-height:100vh;
+  background:var(--bg);
+  padding-bottom:74px;
+  position:relative;
+}

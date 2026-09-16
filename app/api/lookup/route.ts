@@ -1,0 +1,146 @@
+// Geminiの Google検索グラウンディング で、リンク/店名から公開情報を"下書き"取得。v1 から移植。
+import { verifyToken } from "@/lib/store/invite";
+import { logEvent } from "@/lib/store/tracking";
+import { ownerHash } from "@/lib/store/redis";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export async function POST(request: Request) {
+  let b: any;
+  try {
+    b = await request.json();
+  } catch {
+    return json({ error: "リクエスト不正" }, 400);
+  }
+  let { key, invite, model = "gemini-2.5-flash", input } = b || {};
+  let apiKey: string | undefined = key;
+  if (invite) {
+    const v = verifyToken(invite);
+    if (!v || v.expired) return json({ error: "招待リンクが無効か期限切れです。" });
+    apiKey = v.gk;
+    if (v.model) model = v.model;
+    try {
+      await logEvent(ownerHash(v.gk), { id: v.id, label: v.label, type: "lookup", detail: String(input || "").slice(0, 60) });
+    } catch {}
+  }
+  if (!apiKey) return json({ error: "この機能はGeminiキーが必要です（設定で入力）。" }, 400);
+  if (!input || !input.trim()) return json({ error: "リンクか店名を入力してください。" }, 400);
+
+  let query = input.trim();
+  if (/^https?:\/\//i.test(query)) {
+    const q = await urlToQuery(query);
+    if (!q) return json({ error: "リンクからお店を特定できませんでした。お店の名前（正式表記）で試してください。" });
+    query = q;
+  }
+
+  const prompt =
+    `あなたは店舗リサーチの担当です。次のお店を必ず Google検索して、Googleマップ/ビジネスプロフィールの公開情報を特定してください。\n` +
+    `対象のお店: ${query}\n\n` +
+    `手順: ①「${query}」および「${query} クチコミ 評価」「${query} 口コミ」で複数回Google検索 ②Googleマップの該当店を特定 ③公開Webに出ている“外形情報”を読み取る（Googleマップ本体に加え、食べログ/ホットペッパー等ポータルや公式サイトも参照して裏取り）。\n` +
+    `【探す項目】店名／業種(カテゴリ)／エリア・最寄り の3つだけ。\n` +
+    `【捏造の禁止（最重要）】検索結果・スニペット・ナレッジパネルに“実際に表示されている値”だけを使う。見つからない項目は必ず null（典型値・概算・推測で埋めない）。クチコミ点数・件数・説明文・投稿の有無などは推測しない（これらはアプリ側で本人が入力する）。\n` +
+    `最後に、次の形のJSONだけを1つ返す（前置き・説明・コードフェンス・出典は不要。JSON以外は書かない）:\n` +
+    `{"name":"正式な店名","category":"業種(例:美容院,カフェ)","area":"エリア/最寄りかnull"}`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const gen: any = { temperature: 0, maxOutputTokens: 1200 };
+  if (/flash/i.test(model)) gen.thinkingConfig = { thinkingBudget: 0 };
+  const payload = {
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    tools: [{ google_search: {} }],
+    generationConfig: gen,
+  };
+  try {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (!r.ok) return json({ error: d?.error?.message || `検索エラー(${r.status})` });
+    let text: string = d?.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("") || "";
+    text = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) return json({ error: `「${query}」の情報をうまく取得できませんでした。店名を正式表記（駅名や地域を足す）にするか、下の設問に手動でご回答ください。`, query });
+    let info;
+    try {
+      info = JSON.parse(m[0]);
+    } catch {
+      return json({ error: "取得結果の解析に失敗しました。手入力でお願いします。" });
+    }
+    return json({ found: true, info, query });
+  } catch (e: any) {
+    return json({ error: "通信エラー: " + (e?.message || e) });
+  }
+}
+
+// Googleマップ等のURL → 店名クエリ（短縮リンク展開・同意画面・cidページにも対応）
+async function urlToQuery(u: string): Promise<string | null> {
+  let finalUrl = u;
+  let html = "";
+  try {
+    const r = await fetch(u, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept-Language": "ja",
+      },
+    });
+    finalUrl = r.url || u;
+    try {
+      html = await r.text();
+    } catch {}
+  } catch {}
+
+  if (/consent\.google\./i.test(finalUrl)) {
+    const c = finalUrl.match(/[?&]continue=([^&]+)/);
+    if (c && c[1]) {
+      try {
+        finalUrl = decodeURIComponent(c[1]);
+      } catch {}
+    }
+  }
+
+  const fromUrl = (url: string): string => {
+    try {
+      const dec = decodeURIComponent(url);
+      let m = dec.match(/\/maps\/place\/([^/@?]+)/);
+      if (m && m[1]) return m[1].replace(/\+/g, " ").trim();
+      m = dec.match(/[?&](?:q|query)=([^&]+)/);
+      if (m && m[1] && !/^[-0-9.,\s]+$/.test(m[1])) return decodeURIComponent(m[1].replace(/\+/g, " ")).trim();
+    } catch {}
+    return "";
+  };
+  let name = fromUrl(finalUrl) || fromUrl(u);
+
+  if (!name && html) {
+    const pick = (re: RegExp): string => {
+      const m = html.match(re);
+      return m && m[1] ? m[1] : "";
+    };
+    const t =
+      pick(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) ||
+      pick(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i) ||
+      pick(/<meta[^>]+itemprop=["']name["'][^>]+content=["']([^"']+)["']/i) ||
+      pick(/<title[^>]*>([^<]+)<\/title>/i);
+    const c = cleanTitle(t);
+    if (c && !isJunkName(c)) name = c;
+  }
+  return name && !isJunkName(name) ? name : null;
+}
+
+function cleanTitle(t: string): string {
+  return String(t || "")
+    .replace(/\s*[-–—|]\s*Google\s*(マップ|Maps).*$/i, "")
+    .replace(/\s+·\s+.*$/, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .trim();
+}
+
+function isJunkName(s: string): boolean {
+  return /^\s*google\s*(マップ|maps)?\s*$/i.test(s) || s.length < 2;
+}
+
+function json(o: unknown, s = 200) {
+  return new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json" } });
+}
