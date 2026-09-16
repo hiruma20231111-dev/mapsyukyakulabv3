@@ -58,15 +58,36 @@ export async function POST(request: Request) {
     .map((c) => c.name);
   const diagnosis = { total: view.total, grade: view.rank, weak };
 
+  const styleNote =
+    "\n\n[回答スタイル・厳守]\n" +
+    "・広く一般的な質問（「何から始める？」等）には、要点を2〜3個に絞って各1〜2文で端的に答える。長文にしない。\n" +
+    "・具体的な質問には、手順を含めてしっかり丁寧に答える。\n" +
+    "・専門用語は使わず、店主にやさしい言葉で。\n" +
+    "・回答の最後に必ず、次に深掘りできる短い質問候補を2〜3個、下記の形式だけで付ける（本文には含めない）:\n" +
+    "<<SUGGEST>>\n・（候補1）\n・（候補2）\n・（候補3）";
+
   const system = buildSystemPrompt("std", "polite");
   const contents: GeminiContent[] = [];
   for (const c of historyToContents(history)) contents.push(c);
-  contents.push({ role: "user", parts: [{ text: buildConsultUserPrompt({ question, diagnosis }) }] });
+  contents.push({ role: "user", parts: [{ text: buildConsultUserPrompt({ question, diagnosis }) + styleNote }] });
 
   try {
     const res = await callGemini({ apiKey, model, systemInstruction: system, contents, mode: "consult" });
     if (!res.ok) return json({ error: res.error || "AIの応答に失敗しました。" });
-    return json({ ok: true, answer: res.text });
+    // 回答本文と「深掘り候補」を分離する。
+    let answer = res.text;
+    let suggestions: string[] = [];
+    const i = answer.indexOf("<<SUGGEST>>");
+    if (i >= 0) {
+      const after = answer.slice(i + "<<SUGGEST>>".length);
+      answer = answer.slice(0, i).trim();
+      suggestions = after
+        .split(/\r?\n/)
+        .map((l) => l.replace(/^[\s　・･\-*●•‣◦\d.、）)]+/, "").trim())
+        .filter((l) => l.length > 0 && l.length <= 40)
+        .slice(0, 3);
+    }
+    return json({ ok: true, answer, suggestions });
   } catch (e: any) {
     return json({ error: "通信エラー: " + (e?.message || e) });
   }

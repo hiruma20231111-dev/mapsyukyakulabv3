@@ -13,6 +13,7 @@ export function ConsultV3({ slug, storeName }: { slug: string; storeName: string
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [suggests, setSuggests] = useState<string[]>(SUGGESTS);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function ConsultV3({ slug, storeName }: { slug: string; storeName: string
     setMsgs((prev) => [...prev, { role: "user", text: question }]);
     setInput("");
     setBusy(true);
+    setSuggests([]); // 回答が返るまで候補は隠す
     try {
       const r = await fetch("/api/consult", {
         method: "POST",
@@ -36,8 +38,11 @@ export function ConsultV3({ slug, storeName }: { slug: string; storeName: string
       const d = await r.json();
       const text = d?.answer || d?.error || "うまく応答できませんでした。";
       setMsgs((prev) => [...prev, { role: "ai", text }]);
+      // AIが返した深掘り候補を次のタップ用に表示（無ければ既定に戻す）
+      setSuggests(Array.isArray(d?.suggestions) && d.suggestions.length ? d.suggestions : SUGGESTS);
     } catch {
       setMsgs((prev) => [...prev, { role: "ai", text: "通信エラーが起きました。少し時間をおいてお試しください。" }]);
+      setSuggests(SUGGESTS);
     } finally {
       setBusy(false);
     }
@@ -69,9 +74,10 @@ export function ConsultV3({ slug, storeName }: { slug: string; storeName: string
         )}
       </div>
 
-      {msgs.length <= 1 && (
+      {!busy && suggests.length > 0 && (
         <div className="cv-suggests">
-          {SUGGESTS.map((s) => (
+          {msgs.length > 1 && <span className="cv-suggests-lead">もっと詳しく聞く：</span>}
+          {suggests.map((s) => (
             <button key={s} className="cv-suggest" onClick={() => send(s)} disabled={busy}>{s}</button>
           ))}
         </div>

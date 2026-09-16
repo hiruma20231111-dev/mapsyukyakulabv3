@@ -22,7 +22,8 @@
 .cv-typing i:nth-child(2){ animation-delay:.15s; } .cv-typing i:nth-child(3){ animation-delay:.3s; }
 @keyframes cv-bounce{ 0%,100%{ opacity:.3; transform:translateY(0); } 50%{ opacity:1; transform:translateY(-3px); } }
 
-.cv-suggests{ display:flex; gap:7px; flex-wrap:wrap; padding:0 16px 10px; background:var(--bg); }
+.cv-suggests{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; padding:0 16px 10px; background:var(--bg); }
+.cv-suggests-lead{ font-size:11px; font-weight:800; color:var(--muted); width:100%; margin:0 0 1px; }
 .cv-suggest{ font-size:12px; font-weight:700; color:var(--accent-deep); background:var(--accent-soft); border:1px solid #cfeae5; border-radius:999px; padding:7px 12px; cursor:pointer; font-family:inherit; }
 
 .cv-inputbar{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--line); background:var(--surface); }
