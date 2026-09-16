@@ -42,6 +42,8 @@ export async function POST(request: Request) {
       if (v.model) model = v.model;
     }
   }
+  // サーバー共通キー（Vercel環境変数）へフォールバック＝1つ入れれば全診断でAI相談が有効。
+  if (!apiKey) apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
   if (!apiKey) {
     return json({ unavailable: true, error: "このお店のAI相談はまだ準備中です。担当者にお問い合わせください。" });
   }

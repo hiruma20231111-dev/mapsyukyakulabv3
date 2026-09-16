@@ -26,5 +26,6 @@ export async function GET() {
     }
   }
 
-  return Response.json({ storeReady: storeReady(), hasRedisUrl, hasKvUrl, urlScheme, relatedKeys, ping, err });
+  const aiReady = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  return Response.json({ storeReady: storeReady(), aiReady, hasRedisUrl, hasKvUrl, urlScheme, relatedKeys, ping, err });
 }

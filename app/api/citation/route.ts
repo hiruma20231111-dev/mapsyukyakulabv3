@@ -31,7 +31,9 @@ export async function POST(request: Request) {
     if (v.model) model = v.model;
   }
   if (!storeName || !String(storeName).trim()) return json({ error: "店舗名が必要です。" }, 400);
-  // キーが無ければ手入力にフォールバック（UIはチップで手動採点できる）
+  // サーバー共通キー（Vercel環境変数）へフォールバック。
+  if (!apiKey) apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
+  // それでも無ければ手入力にフォールバック（UIはチップで手動採点できる）
   if (!apiKey) return json({ manual: true, note: "Geminiキーが未設定のため、手入力で採点してください。" });
 
   const prompt =

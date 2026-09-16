@@ -21,10 +21,16 @@ export function SalesApp() {
 
   const loadList = () =>
     fetch("/api/diagnoses").then((r) => r.json()).then((d) => setItems(d?.items || [])).catch(() => setItems([]));
+  // AI連携＝この端末のキー or サーバー共通キー（環境変数）のどちらかがあればOK。
+  const refreshAi = () => {
+    const local = hasCreds();
+    setKeyReady(local);
+    fetch("/api/health").then((r) => r.json()).then((d) => setKeyReady(local || !!d?.aiReady)).catch(() => {});
+  };
 
-  useEffect(() => { loadList(); setKeyReady(hasCreds()); }, []);
+  useEffect(() => { loadList(); refreshAi(); }, []);
 
-  const backToDash = () => { setView("dashboard"); setKeyReady(hasCreds()); loadList(); };
+  const backToDash = () => { setView("dashboard"); refreshAi(); loadList(); };
 
   if (view === "new") return <IntakeFlow onDone={backToDash} />;
   if (view === "settings") return <Settings onBack={backToDash} />;
@@ -102,6 +108,8 @@ function loadWeights(): Weights {
 function Settings({ onBack }: { onBack: () => void }) {
   const [gkey, setGkey] = useState("");
   const [keySaved, setKeySaved] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testMsg, setTestMsg] = useState("");
   const [weights, setWeights] = useState<Weights>({ ...DEFAULT_WEIGHTS });
   const [wSaved, setWSaved] = useState(false);
 
@@ -116,6 +124,22 @@ function Settings({ onBack }: { onBack: () => void }) {
       else localStorage.removeItem("maplab_gkey");
       setKeySaved(true); setTimeout(() => setKeySaved(false), 1800);
     } catch { /* noop */ }
+  };
+
+  const testKey = async () => {
+    setTesting(true); setTestMsg("");
+    try {
+      const r = await fetch("/api/ai", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ test: true, key: gkey.trim(), model: "gemini-2.5-flash" }),
+      });
+      const d = await r.json();
+      setTestMsg(d?.ok ? "接続OK（このキーで使えます）" : `NG：${d?.error || "接続できませんでした"}`);
+    } catch {
+      setTestMsg("NG：通信エラー");
+    } finally {
+      setTesting(false);
+    }
   };
 
   const total = KEYS.reduce((a, k) => a + (weights[k] || 0), 0);
@@ -136,7 +160,11 @@ function Settings({ onBack }: { onBack: () => void }) {
               <input className="sa-input" type="password" value={gkey} onChange={(e) => setGkey(e.target.value)} placeholder="AIza… で始まるキー" autoComplete="off" />
               <button className="sa-save" onClick={saveKey}>保存</button>
             </div>
+            <div className="sa-actions" style={{ marginTop: 10 }}>
+              <button className="sa-btn ghost" onClick={testKey} disabled={testing || !gkey.trim()}>{testing ? "テスト中…" : "接続テスト"}</button>
+            </div>
             {keySaved && <div className="sa-saved">保存しました。</div>}
+            {testMsg && <div className="sa-saved" style={{ color: testMsg.startsWith("接続OK") ? "var(--accent-deep)" : "var(--danger)" }}>{testMsg}</div>}
           </div>
         </div>
 
