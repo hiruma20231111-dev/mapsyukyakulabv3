@@ -1,6 +1,6 @@
 // オーナー様のAI相談：slug から公開診断＋営業のcredsを読み、診断コンテキスト付きでGeminiに相談する。
 // キー（invite/key）は発行時にサーバ側へ保存されており、クライアントには渡さない。
-import { getPublicDiagnosis } from "@/lib/store/diagnosis-store";
+import { getPublicDiagnosis, recordEvent } from "@/lib/store/diagnosis-store";
 import { getGeminiKey } from "@/lib/store/config";
 import { verifyToken } from "@/lib/store/invite";
 import { buildResultView } from "@/features/result";
@@ -32,6 +32,7 @@ export async function POST(request: Request) {
 
   const rec = await getPublicDiagnosis(slug);
   if (!rec) return json({ error: "診断が見つかりませんでした。" }, 404);
+  recordEvent(slug, "consults").catch(() => {});
 
   // AI相談用の資格情報（発行時に営業が付与）。無ければ相談は未提供。
   let apiKey = rec.creds?.key || "";

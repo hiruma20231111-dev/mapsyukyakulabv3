@@ -55,6 +55,44 @@ export async function savePublicDiagnosis(
 
 const INDEX_KEY = "pubdiag:index";
 
+// ---- 稼働状況（閲覧・相談の回数と最終アクセス）----
+export interface DiagStats { views: number; consults: number; lastTs: number }
+const gs = globalThis as unknown as { __maplabStats?: Map<string, DiagStats> };
+const statMem: Map<string, DiagStats> = gs.__maplabStats ?? (gs.__maplabStats = new Map());
+
+export async function recordEvent(slug: string, type: "views" | "consults"): Promise<void> {
+  if (!slug) return;
+  const now = Date.now();
+  const c = getClient();
+  if (c) {
+    try {
+      await c.hincrby(`pubdiag:stat:${slug}`, type, 1);
+      await c.hset(`pubdiag:stat:${slug}`, "lastTs", String(now));
+      await c.expire(`pubdiag:stat:${slug}`, TTL);
+      return;
+    } catch { /* フォールバックへ */ }
+  }
+  const s = statMem.get(slug) ?? { views: 0, consults: 0, lastTs: 0 };
+  s[type] += 1;
+  s.lastTs = now;
+  statMem.set(slug, s);
+}
+
+export async function getStats(slug: string): Promise<DiagStats> {
+  const empty: DiagStats = { views: 0, consults: 0, lastTs: 0 };
+  if (!slug) return empty;
+  const c = getClient();
+  if (c) {
+    try {
+      const h = await c.hgetall(`pubdiag:stat:${slug}`);
+      if (h && Object.keys(h).length) {
+        return { views: +(h.views || 0), consults: +(h.consults || 0), lastTs: +(h.lastTs || 0) };
+      }
+    } catch { /* フォールバックへ */ }
+  }
+  return statMem.get(slug) ?? empty;
+}
+
 /** 最近発行した診断（新しい順）。管理画面の一覧用。 */
 export async function listRecentDiagnoses(limit = 50): Promise<PublicDiagnosis[]> {
   const c = getClient();

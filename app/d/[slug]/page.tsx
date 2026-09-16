@@ -1,5 +1,5 @@
 // オーナー様が受け取る診断結果ページ（固有URL・キー不要で閲覧可）。
-import { getPublicDiagnosis } from "@/lib/store/diagnosis-store";
+import { getPublicDiagnosis, recordEvent } from "@/lib/store/diagnosis-store";
 import { buildResultView } from "@/features/result";
 import { OwnerView } from "./OwnerView";
 
@@ -18,6 +18,7 @@ export default async function DiagnosisResultPage({ params }: { params: { slug: 
       </main>
     );
   }
+  recordEvent(params.slug, "views").catch(() => {});
   const data = buildResultView(rec.storeName, rec.answers, { query: rec.query, weights: rec.weights });
   return (
     <main className="app">

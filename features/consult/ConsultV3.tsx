@@ -14,7 +14,17 @@ export function ConsultV3({ slug, storeName }: { slug: string; storeName: string
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [suggests, setSuggests] = useState<string[]>(SUGGESTS);
+  const [fs, setFs] = useState<"s" | "m" | "l">("m");
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("maplab_cvfs");
+      if (v === "s" || v === "m" || v === "l") setFs(v);
+    } catch { /* noop */ }
+  }, []);
+  const chooseFs = (v: "s" | "m" | "l") => { setFs(v); try { localStorage.setItem("maplab_cvfs", v); } catch { /* noop */ } };
+  const fsScale = fs === "s" ? 0.9 : fs === "l" ? 1.2 : 1;
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -49,13 +59,20 @@ export function ConsultV3({ slug, storeName }: { slug: string; storeName: string
   }
 
   return (
-    <div className="cv">
+    <div className="cv" style={{ ["--cvfs" as string]: String(fsScale) }}>
       <div className="cv-head">
         <a className="cv-back" href={`/d/${slug}`} aria-label="診断結果に戻る"><span aria-hidden style={{ fontSize: 20, fontWeight: 900, lineHeight: 1 }}>‹</span></a>
         <span className="cv-orb" />
-        <div>
+        <div className="cv-head-txt">
           <div className="cv-title">AIに相談</div>
           <div className="cv-sub">診断結果をふまえて一緒に考えます</div>
+        </div>
+        <div className="cv-fs" role="group" aria-label="文字サイズ">
+          {(["s", "m", "l"] as const).map((v) => (
+            <button key={v} className={`cv-fs-btn${fs === v ? " on" : ""}`} onClick={() => chooseFs(v)} aria-pressed={fs === v}>
+              <span style={{ fontSize: v === "s" ? 11 : v === "l" ? 17 : 14 }}>あ</span>
+            </button>
+          ))}
         </div>
       </div>
 

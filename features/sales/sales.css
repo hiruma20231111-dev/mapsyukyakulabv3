@@ -36,6 +36,11 @@
 .sa-row-mid{ flex:1; min-width:0; }
 .sa-row-name{ font-size:13px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .sa-row-date{ font-size:11px; color:var(--muted); }
+.sa-row-stat{ display:flex; gap:9px; flex-wrap:wrap; align-items:center; font-size:11px; font-weight:800; margin-top:3px; }
+.sa-row-stat .st-none{ color:var(--faint); }
+.sa-row-stat .st-on{ color:var(--accent-deep); }
+.sa-row-stat .st-ai{ color:#2b6cb0; }
+.sa-row-stat .st-time{ color:var(--muted); font-weight:600; }
 .sa-row-rank{ font-size:10px; font-weight:900; color:#fff; background:var(--navy); border-radius:8px; padding:3px 7px; }
 .sa-row-score{ font-size:16px; font-weight:900; font-variant-numeric:tabular-nums; color:var(--accent-deep); }
 .sa-empty{ font-size:12.5px; color:var(--muted); text-align:center; padding:24px; background:var(--surface); border:1px dashed var(--line); border-radius:var(--r-card); }

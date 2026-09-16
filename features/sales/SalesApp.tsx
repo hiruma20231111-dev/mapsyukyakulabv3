@@ -6,13 +6,19 @@ import { IntakeFlow } from "@/features/intake";
 import { DIAG_CATEGORIES, DEFAULT_WEIGHTS, type CategoryKey } from "@/content/diagnosis-v3";
 
 type View = "dashboard" | "new" | "settings";
-interface ListItem { slug: string; storeName: string; total: number; rank: string; ts: number; path: string }
+interface ListItem { slug: string; storeName: string; total: number; rank: string; ts: number; path: string; views?: number; consults?: number; lastTs?: number }
 type Weights = Record<CategoryKey, number>;
 
+function relTime(ts?: number): string {
+  if (!ts) return "";
+  const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (s < 60) return "さっき";
+  const m = Math.floor(s / 60); if (m < 60) return `${m}分前`;
+  const h = Math.floor(m / 60); if (h < 24) return `${h}時間前`;
+  const d = Math.floor(h / 24); return `${d}日前`;
+}
+
 const KEYS = DIAG_CATEGORIES.map((c) => c.key);
-const hasCreds = () => {
-  try { return !!(localStorage.getItem("maplab_gkey") || localStorage.getItem("maplab_invite")); } catch { return false; }
-};
 
 export function SalesApp() {
   const [view, setView] = useState<View>("dashboard");
@@ -21,10 +27,9 @@ export function SalesApp() {
 
   const loadList = () =>
     fetch("/api/diagnoses").then((r) => r.json()).then((d) => setItems(d?.items || [])).catch(() => setItems([]));
-  // AI連携＝サーバー共有キー（設定で保存）or この端末のキー or 環境変数。
+  // AI連携＝サーバーの共有キー（設定で保存）が入っているか。サーバー基準で判定（localStorageの誤表示を排除）。
   const refreshAi = () => {
-    setKeyReady(hasCreds());
-    fetch("/api/config").then((r) => r.json()).then((d) => { if (d?.hasKey) setKeyReady(true); }).catch(() => {});
+    fetch("/api/config").then((r) => r.json()).then((d) => setKeyReady(!!d?.hasKey)).catch(() => setKeyReady(false));
   };
 
   useEffect(() => { loadList(); refreshAi(); }, []);
@@ -77,7 +82,18 @@ export function SalesApp() {
               <a className="sa-row" key={it.slug} href={it.path} target="_blank" rel="noreferrer">
                 <div className="sa-row-mid">
                   <div className="sa-row-name">{it.storeName}</div>
-                  <div className="sa-row-date">{new Date(it.ts).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+                  <div className="sa-row-date">{new Date(it.ts).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}発行</div>
+                  <div className="sa-row-stat">
+                    {(it.views ?? 0) === 0 ? (
+                      <span className="st-none">● 未閲覧</span>
+                    ) : (
+                      <>
+                        <span className="st-on">● 閲覧 {it.views}</span>
+                        {(it.consults ?? 0) > 0 && <span className="st-ai">相談 {it.consults}</span>}
+                        {it.lastTs ? <span className="st-time">最終 {relTime(it.lastTs)}</span> : null}
+                      </>
+                    )}
+                  </div>
                 </div>
                 <span className="sa-row-rank">{it.rank}</span>
                 <span className="sa-row-score">{it.total}</span>

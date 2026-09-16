@@ -6,15 +6,20 @@
 .cv-orb{ width:30px; height:30px; border-radius:999px; flex:0 0 auto; background:conic-gradient(from 0deg,var(--g-blue),var(--g-yellow),var(--g-green),var(--g-red),var(--g-blue)); animation:cv-spin 3s linear infinite; position:relative; }
 .cv-orb::after{ content:""; position:absolute; inset:6px; border-radius:999px; background:#0e5566; }
 @keyframes cv-spin{ to{ transform:rotate(360deg); } }
+.cv-head-txt{ flex:1; min-width:0; }
 .cv-title{ font-size:14px; font-weight:900; }
 .cv-sub{ font-size:10.5px; opacity:.85; }
+.cv-fs{ display:flex; gap:4px; flex:0 0 auto; }
+.cv-fs-btn{ width:30px; height:30px; border-radius:8px; border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; cursor:pointer; line-height:1; padding:0; }
+.cv-fs-btn.on{ background:#fff; color:var(--accent-deep); border-color:#fff; font-weight:900; }
 
 .cv-scroll{ flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; background:var(--bg); }
 .cv-msg{ display:flex; gap:9px; align-items:flex-start; max-width:88%; }
 .cv-msg.user{ align-self:flex-end; flex-direction:row-reverse; }
 .cv-av{ width:30px; height:30px; border-radius:999px; flex:0 0 auto; background:conic-gradient(from 0deg,var(--g-blue),var(--g-yellow),var(--g-green),var(--g-red),var(--g-blue)); position:relative; }
 .cv-av::after{ content:""; position:absolute; inset:5px; border-radius:999px; background:var(--surface); }
-.cv-bubble{ background:var(--surface); border:1px solid var(--line); border-radius:4px 14px 14px 14px; padding:11px 13px; font-size:13px; line-height:1.65; box-shadow:var(--sh1); white-space:pre-wrap; }
+.cv-bubble{ background:var(--surface); border:1px solid var(--line); border-radius:4px 14px 14px 14px; padding:12px 14px; font-size:calc(13px * var(--cvfs, 1)); line-height:1.95; box-shadow:var(--sh1); white-space:pre-wrap; }
+.cv-msg.ai .cv-bubble{ letter-spacing:.01em; }
 .cv-msg.user .cv-bubble{ background:var(--accent); border-color:var(--accent); color:#fff; border-radius:14px 4px 14px 14px; }
 .cv-note{ font-size:11px; color:var(--muted); text-align:center; padding:8px 12px; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
 .cv-typing{ display:inline-flex; gap:4px; padding:2px 0; }
