@@ -14,7 +14,9 @@ export interface PublicDiagnosis {
 }
 
 const TTL = 7776000; // 90日
-const mem = new Map<string, PublicDiagnosis>();
+// Redis未接続時のフォールバック。dev の HMR/モジュール再評価をまたいで共有するため globalThis に保持。
+const g = globalThis as unknown as { __maplabPubDiag?: Map<string, PublicDiagnosis> };
+const mem: Map<string, PublicDiagnosis> = g.__maplabPubDiag ?? (g.__maplabPubDiag = new Map());
 
 function slugify(name: string): string {
   // URLに安全な ASCII slug（日本語など非ASCIIは落とす）。英数字が無ければ "d"。

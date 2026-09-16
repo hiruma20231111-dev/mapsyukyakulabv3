@@ -1,0 +1,29 @@
+/* 使い方マニュアル（オーナー様の初回スクロール画面）。色はトークン。 */
+
+.mn{ padding-bottom:104px; }
+.mn-hero{ position:relative; background:var(--grad-hero); color:#fff; border-radius:0 0 24px 24px; padding:26px 20px 26px; overflow:hidden; }
+.mn-hero::before{ content:""; position:absolute; width:220px; height:220px; right:-70px; top:-90px; border-radius:999px; background:radial-gradient(circle, rgba(19,184,160,.5), transparent 68%); }
+.mn-hero > *{ position:relative; }
+.mn-eyebrow{ display:inline-flex; align-items:center; gap:7px; font-size:11px; font-weight:800; letter-spacing:.06em; background:rgba(255,255,255,.16); padding:5px 12px; border-radius:999px; margin:0 0 12px; }
+.mn-eyebrow .mini{ width:14px; height:14px; border-radius:999px; background:conic-gradient(from 0deg,var(--g-blue),var(--g-yellow),var(--g-green),var(--g-red),var(--g-blue)); animation:mn-spin 3s linear infinite; }
+@keyframes mn-spin{ to{ transform:rotate(360deg); } }
+.mn-title{ font-size:22px; font-weight:900; line-height:1.35; margin:0 0 10px; white-space:pre-line; }
+.mn-lead{ font-size:12.5px; line-height:1.7; opacity:.94; margin:0; }
+
+.mn-body{ padding:18px 16px 0; }
+.mn-steplabel{ font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0 2px 12px; }
+.mn-card{ display:flex; gap:13px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-card); padding:15px 15px; margin:0 0 12px; box-shadow:var(--sh1); opacity:0; transform:translateY(10px); }
+.mn-card.in{ opacity:1; transform:none; transition:opacity .4s var(--ease), transform .4s var(--ease); }
+.mn-card-ic{ width:40px; height:40px; border-radius:12px; flex:0 0 auto; display:grid; place-items:center; background:var(--accent-soft); color:var(--accent-deep); }
+.mn-card-ic svg{ width:22px; height:22px; }
+.mn-card-t{ font-size:14px; font-weight:800; margin:2px 0 5px; }
+.mn-card-b{ font-size:12.5px; line-height:1.65; color:var(--muted); }
+
+.mn-cta{ position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:100%; max-width:520px; padding:11px 16px 16px; background:linear-gradient(0deg, var(--bg) 72%, transparent); z-index:4; }
+.mn-cta .btn{ width:100%; border:0; border-radius:var(--r-md); padding:14px; font-size:15px; font-weight:900; color:#fff; background:var(--grad-teal); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.mn-cta .btn svg{ width:18px; height:18px; }
+
+@media (prefers-reduced-motion:reduce){
+  .mn-eyebrow .mini{ animation:none; }
+  .mn-card{ opacity:1; transform:none; }
+}

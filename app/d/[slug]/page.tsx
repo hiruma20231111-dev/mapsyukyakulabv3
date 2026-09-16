@@ -1,6 +1,7 @@
 // オーナー様が受け取る診断結果ページ（固有URL・キー不要で閲覧可）。
 import { getPublicDiagnosis } from "@/lib/store/diagnosis-store";
-import { buildResultView, ResultScreen } from "@/features/result";
+import { buildResultView } from "@/features/result";
+import { OwnerView } from "./OwnerView";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export default async function DiagnosisResultPage({ params }: { params: { slug: 
   const data = buildResultView(rec.storeName, rec.answers, { query: rec.query, weights: rec.weights });
   return (
     <main className="app">
-      <ResultScreen data={data} />
+      <OwnerView data={data} slug={params.slug} />
     </main>
   );
 }
