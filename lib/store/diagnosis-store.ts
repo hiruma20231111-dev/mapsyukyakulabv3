@@ -10,6 +10,8 @@ export interface PublicDiagnosis {
   answers: V3Answers;
   query?: string;
   weights?: Partial<Record<CategoryKey, number>>;
+  /** AI相談用の資格情報（サーバ側のみ・クライアントには渡さない）。営業のGemini invite/key。 */
+  creds?: { invite?: string; key?: string };
   ts: number;
 }
 

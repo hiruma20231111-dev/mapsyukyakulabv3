@@ -17,11 +17,16 @@ export async function POST(request: Request) {
   if (!storeName) return json({ error: "店舗名を入力してください。" }, 400);
   if (!answers || typeof answers !== "object") return json({ error: "診断内容がありません。" }, 400);
 
+  const creds =
+    b?.creds && typeof b.creds === "object"
+      ? { invite: typeof b.creds.invite === "string" ? b.creds.invite : undefined, key: typeof b.creds.key === "string" ? b.creds.key : undefined }
+      : undefined;
   const slug = await savePublicDiagnosis({
     storeName,
     answers,
     query: typeof b?.query === "string" ? b.query : undefined,
     weights: b?.weights && typeof b.weights === "object" ? b.weights : undefined,
+    creds,
   });
   return json({ ok: true, slug, path: `/d/${slug}` });
 }
