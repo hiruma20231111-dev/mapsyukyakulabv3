@@ -25,6 +25,8 @@ export interface CategoryView {
   note: string;
   comment: string;
   insight: string;
+  firstStep: string;
+  effect: string;
   subs: SubView[];
 }
 
@@ -36,6 +38,8 @@ export interface ResultView {
   verdict: string;
   aio: { query: string; ratio: number; status: string };
   categories: CategoryView[];
+  /** 優先的に取り組む項目（伸びしろの大きい順・最大3件）。 */
+  priorities: CategoryView[];
 }
 
 const ICON: Record<CategoryKey, IconName> = {
@@ -102,9 +106,17 @@ export function buildResultView(
       note: copy.note,
       comment: copy.comment,
       insight: copy.insight,
+      firstStep: copy.firstStep,
+      effect: copy.effect,
       subs,
     };
   });
+
+  // 優先的に取り組む＝伸びしろ（headroom）の大きい順。余地が無いものは除外。
+  const priorities = [...categories]
+    .filter((c) => c.headroom > 0)
+    .sort((a, b) => b.headroom - a.headroom)
+    .slice(0, 3);
 
   const review = byKey.get("review")!;
   const citation = byKey.get("citation")!;
@@ -118,5 +130,6 @@ export function buildResultView(
     verdict: verdictOf(scored.rank),
     aio: { query: opts?.query ?? "近くのお店 おすすめ", ratio: aioRatio, status: aioStatus(aioRatio) },
     categories,
+    priorities,
   };
 }

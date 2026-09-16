@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { Icon, type IconName } from "@/design/icons";
 import { DIAG_CATEGORIES, type CategoryKey } from "@/content/diagnosis-v3";
+import { ResultScreen, buildResultView } from "@/features/result";
 
-type Step = "input" | "issuing" | "issued";
+type Step = "input" | "preview" | "issuing" | "issued";
 type CatAns = Record<string, number | null>;
 type Answers = Record<CategoryKey, CatAns>;
 
@@ -113,6 +114,19 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
   }
 
   const fullUrl = typeof window !== "undefined" ? window.location.origin + slug : slug;
+
+  // 発行前プレビュー：営業が診断結果を確認 →「戻って修正」or「この内容で発行」。
+  if (step === "preview") {
+    const view = buildResultView(storeName, answers, { query: storeName, weights });
+    return (
+      <ResultScreen
+        data={view}
+        variant="sales-preview"
+        onBack={() => setStep("input")}
+        onIssue={issue}
+      />
+    );
+  }
 
   if (step === "issuing") {
     return (
@@ -222,10 +236,10 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
       ))}
 
       <div className="in-cta">
-        <button className="btn" onClick={issue} disabled={!canIssue}>
-          <Icon name="pin" size={18} />URL / QR を発行する
+        <button className="btn" onClick={() => setStep("preview")} disabled={!canIssue}>
+          <Icon name="search" size={18} />診断結果を確認する
         </button>
-        <p className="note">{canIssue ? "発行後、お客様に渡せる固有リンクとQRが作られます" : "店舗名と各項目を入力すると発行できます"}</p>
+        <p className="note">{canIssue ? "結果を確認してから発行できます（発行前に採点をチェック）" : "店舗名と各項目を入力すると次に進めます"}</p>
       </div>
     </div>
   );

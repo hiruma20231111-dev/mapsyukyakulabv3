@@ -145,7 +145,20 @@ function DetailSheet({ cat, onClose }: { cat: CategoryView | null; onClose: () =
   );
 }
 
-export function ResultScreen({ data, onConsult }: { data: ResultView; onConsult?: () => void }) {
+export function ResultScreen({
+  data,
+  onConsult,
+  variant = "owner",
+  onBack,
+  onIssue,
+}: {
+  data: ResultView;
+  onConsult?: () => void;
+  /** owner=お客様が受け取る画面 / sales-preview=営業が発行前に確認する画面 */
+  variant?: "owner" | "sales-preview";
+  onBack?: () => void;
+  onIssue?: () => void;
+}) {
   const [open, setOpen] = useState<CategoryView | null>(null);
   const [num, setNum] = useState(0);
 
@@ -179,6 +192,24 @@ export function ResultScreen({ data, onConsult }: { data: ResultView; onConsult?
       </header>
 
       <div className="rs-body">
+        {data.priorities.length > 0 && (
+          <section className="rs-pri-sec">
+            <div className="rs-sec-label"><Icon name="spark" size={14} />優先的に取り組む</div>
+            {data.priorities.map((c, i) => (
+              <div className="rs-pri" key={c.key} style={{ borderLeftColor: c.color }}>
+                <span className="rs-pri-no" style={{ background: c.color }}>{i + 1}</span>
+                <div className="rs-pri-main">
+                  <div className="rs-pri-name">{c.name}<small>{c.note}</small></div>
+                  <div className="rs-pri-step"><b>最初の一歩：</b>{c.firstStep}</div>
+                  <div className="rs-pri-effect"><Icon name="spark" size={12} />{c.effect}</div>
+                </div>
+                <span className="rs-pri-gain">+{c.headroom}<small>pt</small></span>
+              </div>
+            ))}
+            <p className="rs-pri-note">※ 具体的な進め方は、下の「AIに相談」で一緒に決められます。</p>
+          </section>
+        )}
+
         <div className="rs-hint"><Icon name="spark" size={14} />各項目を長押しすると、採点の内訳が見られます</div>
         <div className="rs-rows">
           {data.categories.map((c) => (
@@ -196,12 +227,19 @@ export function ResultScreen({ data, onConsult }: { data: ResultView; onConsult?
         </div>
       </div>
 
-      <div className="rs-cta">
-        <button type="button" className="btn" onClick={onConsult}>
-          <Icon name="chat" size={18} />AIと一緒に改善をはじめる
-        </button>
-        <p className="note">診断をふまえて「まず何から」を一緒に決めます</p>
-      </div>
+      {variant === "sales-preview" ? (
+        <div className="rs-cta rs-cta-2">
+          <button type="button" className="btn ghost" onClick={onBack}>戻って修正</button>
+          <button type="button" className="btn" onClick={onIssue}>この内容で発行する</button>
+        </div>
+      ) : (
+        <div className="rs-cta">
+          <button type="button" className="btn" onClick={onConsult}>
+            <Icon name="chat" size={18} />AIと一緒に改善をはじめる
+          </button>
+          <p className="note">診断をふまえて「まず何から」を一緒に決めます</p>
+        </div>
+      )}
 
       <DetailSheet cat={open} onClose={() => setOpen(null)} />
     </div>
