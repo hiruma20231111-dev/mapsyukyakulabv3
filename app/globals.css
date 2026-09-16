@@ -8,6 +8,7 @@
 @import "../features/consult/consult.css";
 @import "../features/onboarding/onboarding.css";
 @import "../features/result/result.css";
+@import "../features/intake/intake.css";
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0 }
 html,body{ margin:0; padding:0 }
