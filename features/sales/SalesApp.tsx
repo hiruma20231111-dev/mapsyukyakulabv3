@@ -1,0 +1,162 @@
+"use client";
+// 営業ツールのシェル：ダッシュボード（利用状況）／新規診断発行／設定（Geminiキー・配点）。
+import { useEffect, useState } from "react";
+import { Icon } from "@/design/icons";
+import { IntakeFlow } from "@/features/intake";
+import { DIAG_CATEGORIES, DEFAULT_WEIGHTS, type CategoryKey } from "@/content/diagnosis-v3";
+
+type View = "dashboard" | "new" | "settings";
+interface ListItem { slug: string; storeName: string; total: number; rank: string; ts: number; path: string }
+type Weights = Record<CategoryKey, number>;
+
+const KEYS = DIAG_CATEGORIES.map((c) => c.key);
+const hasCreds = () => {
+  try { return !!(localStorage.getItem("maplab_gkey") || localStorage.getItem("maplab_invite")); } catch { return false; }
+};
+
+export function SalesApp() {
+  const [view, setView] = useState<View>("dashboard");
+  const [items, setItems] = useState<ListItem[] | null>(null);
+  const [keyReady, setKeyReady] = useState(false);
+
+  const loadList = () =>
+    fetch("/api/diagnoses").then((r) => r.json()).then((d) => setItems(d?.items || [])).catch(() => setItems([]));
+
+  useEffect(() => { loadList(); setKeyReady(hasCreds()); }, []);
+
+  const backToDash = () => { setView("dashboard"); setKeyReady(hasCreds()); loadList(); };
+
+  if (view === "new") return <IntakeFlow onDone={backToDash} />;
+  if (view === "settings") return <Settings onBack={backToDash} />;
+
+  // ---- ダッシュボード ----
+  const now = new Date();
+  const thisMonth = (items || []).filter((it) => {
+    const d = new Date(it.ts);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
+  return (
+    <div className="sa">
+      <div className="sa-top">
+        <span className="mk"><i className="b" /><i className="y" /><i className="g" /><i className="r" /></span>
+        <span className="name">マップ集客ラボ</span>
+        <span className="role">営業</span>
+        <button className="gear" onClick={() => setView("settings")} aria-label="設定"><Icon name="gear" size={19} /></button>
+      </div>
+
+      <div className="sa-body">
+        <div className={`sa-ai ${keyReady ? "ok" : "ng"}`}>
+          <Icon name={keyReady ? "check" : "spark"} size={16} />
+          {keyReady ? "AI連携：設定済み（AI精査・相談が使えます）" : "AI連携：未設定"}
+          {!keyReady && <span className="set" onClick={() => setView("settings")}>設定する</span>}
+        </div>
+
+        <div className="sa-stats">
+          <div className="sa-stat"><div className="n">{items ? items.length : "–"}</div><div className="l">発行した診断</div></div>
+          <div className="sa-stat"><div className="n">{items ? thisMonth : "–"}</div><div className="l">今月の発行</div></div>
+        </div>
+
+        <button className="sa-new" onClick={() => setView("new")}>
+          <Icon name="spark" size={22} />新規診断を発行
+        </button>
+
+        <div className="sa-sec-t">発行した診断<span className="cnt">{items ? `${items.length}件` : ""}</span></div>
+        {items == null ? (
+          <div className="sa-empty">読み込み中…</div>
+        ) : items.length === 0 ? (
+          <div className="sa-empty">まだ発行がありません。「新規診断を発行」から始めましょう。</div>
+        ) : (
+          <div className="sa-list">
+            {items.map((it) => (
+              <a className="sa-row" key={it.slug} href={it.path} target="_blank" rel="noreferrer">
+                <div className="sa-row-mid">
+                  <div className="sa-row-name">{it.storeName}</div>
+                  <div className="sa-row-date">{new Date(it.ts).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+                </div>
+                <span className="sa-row-rank">{it.rank}</span>
+                <span className="sa-row-score">{it.total}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- 設定（Geminiキー・配点）----
+function loadWeights(): Weights {
+  try {
+    const raw = localStorage.getItem("maplab_weights");
+    if (raw) {
+      const w = JSON.parse(raw);
+      const out = { ...DEFAULT_WEIGHTS } as Weights;
+      for (const k of KEYS) if (typeof w[k] === "number") out[k] = w[k];
+      return out;
+    }
+  } catch { /* noop */ }
+  return { ...DEFAULT_WEIGHTS };
+}
+
+function Settings({ onBack }: { onBack: () => void }) {
+  const [gkey, setGkey] = useState("");
+  const [keySaved, setKeySaved] = useState(false);
+  const [weights, setWeights] = useState<Weights>({ ...DEFAULT_WEIGHTS });
+  const [wSaved, setWSaved] = useState(false);
+
+  useEffect(() => {
+    try { setGkey(localStorage.getItem("maplab_gkey") || ""); } catch { /* noop */ }
+    setWeights(loadWeights());
+  }, []);
+
+  const saveKey = () => {
+    try {
+      if (gkey.trim()) localStorage.setItem("maplab_gkey", gkey.trim());
+      else localStorage.removeItem("maplab_gkey");
+      setKeySaved(true); setTimeout(() => setKeySaved(false), 1800);
+    } catch { /* noop */ }
+  };
+
+  const total = KEYS.reduce((a, k) => a + (weights[k] || 0), 0);
+  const ok = total === 100;
+  const setW = (k: CategoryKey, v: number) => { setWeights((p) => ({ ...p, [k]: v })); setWSaved(false); };
+  const saveW = () => { try { localStorage.setItem("maplab_weights", JSON.stringify(weights)); setWSaved(true); setTimeout(() => setWSaved(false), 1800); } catch { /* noop */ } };
+
+  return (
+    <div className="sa">
+      <button className="sa-back" onClick={onBack}><span aria-hidden style={{ fontSize: 18, fontWeight: 900 }}>‹</span>ダッシュボード</button>
+      <div className="sa-body">
+        <div className="sa-card">
+          <div className="sa-card-t">AI連携（Gemini APIキー）</div>
+          <div className="sa-card-d">AI精査・AIに相談を使うためのキーです。この端末に保存され、発行時に診断へ紐づきます（お客様には表示されません）。</div>
+          <div className="sa-field" style={{ margin: 0 }}>
+            <label>Gemini API キー</label>
+            <div className="sa-inline">
+              <input className="sa-input" type="password" value={gkey} onChange={(e) => setGkey(e.target.value)} placeholder="AIza… で始まるキー" autoComplete="off" />
+              <button className="sa-save" onClick={saveKey}>保存</button>
+            </div>
+            {keySaved && <div className="sa-saved">保存しました。</div>}
+          </div>
+        </div>
+
+        <div className="sa-card">
+          <div className="sa-card-t">配点（重み）</div>
+          <div className="sa-card-d">合計100になるよう調整。初期値はカンリー基準。保存すると次の発行から反映されます。</div>
+          {DIAG_CATEGORIES.map((c) => (
+            <div className="sa-w" key={c.key}>
+              <div className="sa-w-top"><span className="sa-w-name">{c.name}</span><span className="sa-w-val">{weights[c.key]}</span></div>
+              <input className="sa-range" type="range" min={0} max={50} step={1} value={weights[c.key]} onChange={(e) => setW(c.key, Number(e.target.value))} />
+            </div>
+          ))}
+          <div className={`sa-total ${ok ? "ok" : "ng"}`}><span>合計</span><span>{total} / 100 {ok ? "OK" : total > 100 ? "多すぎ" : "不足"}</span></div>
+          <div className="sa-actions">
+            <button className="sa-btn ghost" onClick={() => { setWeights({ ...DEFAULT_WEIGHTS }); setWSaved(false); }}>初期値に戻す</button>
+            <button className="sa-btn primary" onClick={saveW} disabled={!ok} style={ok ? undefined : { opacity: .55 }}>保存</button>
+          </div>
+          {wSaved && <div className="sa-saved" style={{ textAlign: "center" }}>保存しました。</div>}
+        </div>
+      </div>
+    </div>
+  );
+}

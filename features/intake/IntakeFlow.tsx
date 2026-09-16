@@ -23,7 +23,7 @@ function emptyAnswers(): Answers {
   return a;
 }
 
-export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
+export function IntakeFlow({ creds, onDone }: { creds?: IntakeCreds; onDone?: () => void }) {
   const [step, setStep] = useState<Step>("input");
   const [storeName, setStoreName] = useState("");
   const [answers, setAnswers] = useState<Answers>(emptyAnswers);
@@ -161,6 +161,9 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
             <Icon name={copied ? "check" : "link"} size={18} />
           </button>
         </div>
+        {onDone && (
+          <button className="in-backlink" onClick={onDone}>ダッシュボードに戻る</button>
+        )}
       </div>
     );
   }
@@ -169,6 +172,11 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
   return (
     <div className="in-wrap">
       <div className="in-appbar">
+        {onDone && (
+          <button className="in-back" onClick={onDone} aria-label="ダッシュボードに戻る">
+            <span aria-hidden style={{ fontSize: 20, fontWeight: 900, lineHeight: 1 }}>‹</span>
+          </button>
+        )}
         <span className="mk"><i className="b" /><i className="y" /><i className="g" /><i className="r" /></span>
         <span className="name">マップ集客ラボ</span>
         <span className="role">営業モード</span>
