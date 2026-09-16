@@ -34,6 +34,7 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
   const [qr, setQr] = useState("");
   const [copied, setCopied] = useState(false);
   const [weights, setWeights] = useState<Partial<Record<CategoryKey, number>> | undefined>(undefined);
+  const [autoCreds, setAutoCreds] = useState<IntakeCreds | undefined>(undefined);
 
   // 管理画面で設定した配点（あれば）を発行時に反映。
   useEffect(() => {
@@ -42,6 +43,20 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
       if (raw) setWeights(JSON.parse(raw));
     } catch { /* noop */ }
   }, []);
+
+  // 営業のGemini資格情報：URLの ?k=招待トークン or 保存済みを取り込む（発行レコードに載せてAI相談/精査を有効化）。
+  useEffect(() => {
+    try {
+      const k = new URL(window.location.href).searchParams.get("k") || undefined;
+      if (k) { try { localStorage.setItem("maplab_invite", k); } catch { /* noop */ } }
+      const invite = k || localStorage.getItem("maplab_invite") || undefined;
+      const key = localStorage.getItem("maplab_gkey") || undefined;
+      if (invite || key) setAutoCreds({ invite, key });
+    } catch { /* noop */ }
+  }, []);
+
+  // prop 優先、無ければURL/保存から。
+  const eff: IntakeCreds | undefined = creds ?? autoCreds;
 
   const setSub = (cat: CategoryKey, sub: string, score: number) =>
     setAnswers((prev) => ({ ...prev, [cat]: { ...prev[cat], [sub]: prev[cat][sub] === score ? null : score } }));
@@ -60,7 +75,7 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
       const r = await fetch("/api/citation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeName, site, others, key: creds?.key, invite: creds?.invite }),
+        body: JSON.stringify({ storeName, site, others, key: eff?.key, invite: eff?.invite }),
       });
       const d = await r.json();
       if (d?.ok && d.scores) {
@@ -82,7 +97,7 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
       const r = await fetch("/api/issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeName, answers, query: storeName, weights }),
+        body: JSON.stringify({ storeName, answers, query: storeName, weights, creds: eff ? { invite: eff.invite, key: eff.key } : undefined }),
       });
       const d = await r.json();
       const path: string = d?.path || (d?.slug ? `/d/${d.slug}` : "");
