@@ -41,6 +41,9 @@ export async function savePublicDiagnosis(
   if (c) {
     try {
       await c.set(`pubdiag:${slug}`, JSON.stringify(rec), "EX", TTL);
+      await c.lpush(INDEX_KEY, slug);
+      await c.ltrim(INDEX_KEY, 0, 499);
+      await c.expire(INDEX_KEY, TTL);
       return slug;
     } catch {
       /* フォールバックへ */
@@ -48,6 +51,27 @@ export async function savePublicDiagnosis(
   }
   mem.set(slug, rec);
   return slug;
+}
+
+const INDEX_KEY = "pubdiag:index";
+
+/** 最近発行した診断（新しい順）。管理画面の一覧用。 */
+export async function listRecentDiagnoses(limit = 50): Promise<PublicDiagnosis[]> {
+  const c = getClient();
+  if (c) {
+    try {
+      const slugs = await c.lrange(INDEX_KEY, 0, limit - 1);
+      const out: PublicDiagnosis[] = [];
+      for (const s of slugs || []) {
+        const rec = await getPublicDiagnosis(s);
+        if (rec) out.push(rec);
+      }
+      if (out.length) return out;
+    } catch {
+      /* フォールバックへ */
+    }
+  }
+  return [...mem.values()].sort((a, b) => b.ts - a.ts).slice(0, limit);
 }
 
 /** slug から公開診断を取得（無ければ null）。 */

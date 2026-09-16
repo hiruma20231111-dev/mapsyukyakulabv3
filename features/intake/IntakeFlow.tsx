@@ -1,10 +1,9 @@
 "use client";
 // 営業モード：GBP状況を5項目で入力 → 発行（AI精査→保存→固有URL/QR）。
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { Icon, type IconName } from "@/design/icons";
 import { DIAG_CATEGORIES, type CategoryKey } from "@/content/diagnosis-v3";
-import type { V3Answers } from "@/lib/domain/score";
 
 type Step = "input" | "issuing" | "issued";
 type CatAns = Record<string, number | null>;
@@ -34,6 +33,15 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
   const [slug, setSlug] = useState("");
   const [qr, setQr] = useState("");
   const [copied, setCopied] = useState(false);
+  const [weights, setWeights] = useState<Partial<Record<CategoryKey, number>> | undefined>(undefined);
+
+  // 管理画面で設定した配点（あれば）を発行時に反映。
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("maplab_weights");
+      if (raw) setWeights(JSON.parse(raw));
+    } catch { /* noop */ }
+  }, []);
 
   const setSub = (cat: CategoryKey, sub: string, score: number) =>
     setAnswers((prev) => ({ ...prev, [cat]: { ...prev[cat], [sub]: prev[cat][sub] === score ? null : score } }));
@@ -74,7 +82,7 @@ export function IntakeFlow({ creds }: { creds?: IntakeCreds }) {
       const r = await fetch("/api/issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeName, answers, query: storeName }),
+        body: JSON.stringify({ storeName, answers, query: storeName, weights }),
       });
       const d = await r.json();
       const path: string = d?.path || (d?.slug ? `/d/${d.slug}` : "");
