@@ -21,11 +21,10 @@ export function SalesApp() {
 
   const loadList = () =>
     fetch("/api/diagnoses").then((r) => r.json()).then((d) => setItems(d?.items || [])).catch(() => setItems([]));
-  // AI連携＝この端末のキー or サーバー共通キー（環境変数）のどちらかがあればOK。
+  // AI連携＝サーバー共有キー（設定で保存）or この端末のキー or 環境変数。
   const refreshAi = () => {
-    const local = hasCreds();
-    setKeyReady(local);
-    fetch("/api/health").then((r) => r.json()).then((d) => setKeyReady(local || !!d?.aiReady)).catch(() => {});
+    setKeyReady(hasCreds());
+    fetch("/api/config").then((r) => r.json()).then((d) => { if (d?.hasKey) setKeyReady(true); }).catch(() => {});
   };
 
   useEffect(() => { loadList(); refreshAi(); }, []);
@@ -118,12 +117,19 @@ function Settings({ onBack }: { onBack: () => void }) {
     setWeights(loadWeights());
   }, []);
 
-  const saveKey = () => {
+  const saveKey = async () => {
     try {
       if (gkey.trim()) localStorage.setItem("maplab_gkey", gkey.trim());
       else localStorage.removeItem("maplab_gkey");
-      setKeySaved(true); setTimeout(() => setKeySaved(false), 1800);
     } catch { /* noop */ }
+    // サーバー共有設定にも保存＝既存も含む全診断のAI相談・精査で使われる。
+    try {
+      await fetch("/api/config", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ geminiKey: gkey.trim() }),
+      });
+    } catch { /* noop */ }
+    setKeySaved(true); setTimeout(() => setKeySaved(false), 2200);
   };
 
   const testKey = async () => {

@@ -1,6 +1,7 @@
 // サイテーション精査：店名＋公式サイト/他媒体を Gemini(Google検索グラウンディング) で確認し、
 // NAP一致・掲載媒体・SNS活用の「採点案」を返す。最終採点は営業が微調整する（案に過ぎない）。
 import { verifyToken } from "@/lib/store/invite";
+import { getGeminiKey } from "@/lib/store/config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,7 +32,8 @@ export async function POST(request: Request) {
     if (v.model) model = v.model;
   }
   if (!storeName || !String(storeName).trim()) return json({ error: "店舗名が必要です。" }, 400);
-  // サーバー共通キー（Vercel環境変数）へフォールバック。
+  // 営業が設定画面で入れた共有キー（サーバー保存）→ 環境変数。
+  if (!apiKey) apiKey = await getGeminiKey();
   if (!apiKey) apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
   // それでも無ければ手入力にフォールバック（UIはチップで手動採点できる）
   if (!apiKey) return json({ manual: true, note: "Geminiキーが未設定のため、手入力で採点してください。" });

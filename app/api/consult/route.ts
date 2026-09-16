@@ -1,6 +1,7 @@
 // オーナー様のAI相談：slug から公開診断＋営業のcredsを読み、診断コンテキスト付きでGeminiに相談する。
 // キー（invite/key）は発行時にサーバ側へ保存されており、クライアントには渡さない。
 import { getPublicDiagnosis } from "@/lib/store/diagnosis-store";
+import { getGeminiKey } from "@/lib/store/config";
 import { verifyToken } from "@/lib/store/invite";
 import { buildResultView } from "@/features/result";
 import {
@@ -42,7 +43,8 @@ export async function POST(request: Request) {
       if (v.model) model = v.model;
     }
   }
-  // サーバー共通キー（Vercel環境変数）へフォールバック＝1つ入れれば全診断でAI相談が有効。
+  // 営業が設定画面で入れた共有キー（サーバー保存）→ 最後に環境変数。1つ設定すれば全診断で有効。
+  if (!apiKey) apiKey = await getGeminiKey();
   if (!apiKey) apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
   if (!apiKey) {
     return json({ unavailable: true, error: "このお店のAI相談はまだ準備中です。担当者にお問い合わせください。" });
