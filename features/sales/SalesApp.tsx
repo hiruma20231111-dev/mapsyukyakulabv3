@@ -1,12 +1,14 @@
 "use client";
 // 営業ツールのシェル：ダッシュボード（利用状況）／新規診断発行／設定（Geminiキー・配点）。
 import { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import { Icon } from "@/design/icons";
 import { IntakeFlow } from "@/features/intake";
 import { DIAG_CATEGORIES, DEFAULT_WEIGHTS, type CategoryKey } from "@/content/diagnosis-v3";
 
 type View = "dashboard" | "new" | "settings";
-interface ListItem { slug: string; storeName: string; total: number; rank: string; ts: number; path: string; views?: number; consults?: number; lastTs?: number }
+type ReAnswers = Partial<Record<CategoryKey, Record<string, number | null>>>;
+interface ListItem { slug: string; storeName: string; total: number; rank: string; ts: number; path: string; views?: number; consults?: number; lastTs?: number; answers?: ReAnswers }
 type Weights = Record<CategoryKey, number>;
 
 function relTime(ts?: number): string {
@@ -24,6 +26,8 @@ export function SalesApp() {
   const [view, setView] = useState<View>("dashboard");
   const [items, setItems] = useState<ListItem[] | null>(null);
   const [keyReady, setKeyReady] = useState(false);
+  const [qrItem, setQrItem] = useState<ListItem | null>(null);
+  const [reissue, setReissue] = useState<{ storeName?: string; answers?: ReAnswers } | null>(null);
 
   const loadList = () =>
     fetch("/api/diagnoses").then((r) => r.json()).then((d) => setItems(d?.items || [])).catch(() => setItems([]));
@@ -34,9 +38,9 @@ export function SalesApp() {
 
   useEffect(() => { loadList(); refreshAi(); }, []);
 
-  const backToDash = () => { setView("dashboard"); refreshAi(); loadList(); };
+  const backToDash = () => { setView("dashboard"); setReissue(null); refreshAi(); loadList(); };
 
-  if (view === "new") return <IntakeFlow onDone={backToDash} />;
+  if (view === "new") return <IntakeFlow onDone={backToDash} initial={reissue ?? undefined} />;
   if (view === "settings") return <Settings onBack={backToDash} />;
 
   // ---- ダッシュボード ----
@@ -67,7 +71,7 @@ export function SalesApp() {
           <div className="sa-stat"><div className="n">{items ? thisMonth : "–"}</div><div className="l">今月の発行</div></div>
         </div>
 
-        <button className="sa-new" onClick={() => setView("new")}>
+        <button className="sa-new" onClick={() => { setReissue(null); setView("new"); }}>
           <Icon name="spark" size={22} />新規診断を発行
         </button>
 
@@ -79,28 +83,59 @@ export function SalesApp() {
         ) : (
           <div className="sa-list">
             {items.map((it) => (
-              <a className="sa-row" key={it.slug} href={it.path} target="_blank" rel="noreferrer">
-                <div className="sa-row-mid">
-                  <div className="sa-row-name">{it.storeName}</div>
-                  <div className="sa-row-date">{new Date(it.ts).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}発行</div>
-                  <div className="sa-row-stat">
-                    {(it.views ?? 0) === 0 ? (
-                      <span className="st-none">● 未閲覧</span>
-                    ) : (
-                      <>
-                        <span className="st-on">● 閲覧 {it.views}</span>
-                        {(it.consults ?? 0) > 0 && <span className="st-ai">相談 {it.consults}</span>}
-                        {it.lastTs ? <span className="st-time">最終 {relTime(it.lastTs)}</span> : null}
-                      </>
-                    )}
+              <div className="sa-card2" key={it.slug}>
+                <div className="sa-row2-top">
+                  <div className="sa-row-mid">
+                    <div className="sa-row-name">{it.storeName}</div>
+                    <div className="sa-row-date">{new Date(it.ts).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}発行</div>
+                    <div className="sa-row-stat">
+                      {(it.views ?? 0) === 0 ? (
+                        <span className="st-none">● 未閲覧</span>
+                      ) : (
+                        <>
+                          <span className="st-on">● 閲覧 {it.views}</span>
+                          {(it.consults ?? 0) > 0 && <span className="st-ai">相談 {it.consults}</span>}
+                          {it.lastTs ? <span className="st-time">最終 {relTime(it.lastTs)}</span> : null}
+                        </>
+                      )}
+                    </div>
                   </div>
+                  <span className="sa-row-rank">{it.rank}</span>
+                  <span className="sa-row-score">{it.total}</span>
                 </div>
-                <span className="sa-row-rank">{it.rank}</span>
-                <span className="sa-row-score">{it.total}</span>
-              </a>
+                <div className="sa-acts">
+                  <a className="sa-act" href={it.path} target="_blank" rel="noreferrer"><Icon name="search" size={15} />結果を見る</a>
+                  <button className="sa-act" onClick={() => setQrItem(it)}><Icon name="link" size={15} />QR / URL</button>
+                  <button className="sa-act" onClick={() => { setReissue({ storeName: it.storeName, answers: it.answers }); setView("new"); }}><Icon name="spark" size={15} />再診断</button>
+                </div>
+              </div>
             ))}
           </div>
         )}
+      </div>
+
+      {qrItem && <QrModal item={qrItem} onClose={() => setQrItem(null)} />}
+    </div>
+  );
+}
+
+// ---- QR / URL 再表示モーダル ----
+function QrModal({ item, onClose }: { item: ListItem; onClose: () => void }) {
+  const [qr, setQr] = useState("");
+  const [copied, setCopied] = useState(false);
+  const url = typeof window !== "undefined" ? window.location.origin + item.path : item.path;
+  useEffect(() => { QRCode.toDataURL(url, { margin: 1, width: 320 }).then(setQr).catch(() => {}); }, [url]);
+  return (
+    <div className="sa-modal-mask" onClick={onClose}>
+      <div className="sa-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="sa-modal-t">{item.storeName}</div>
+        <div className="sa-modal-d">このQR / リンクをお客様にお渡しください</div>
+        {qr ? <div className="sa-modal-qr"><img src={qr} alt="診断ページのQR" /></div> : null}
+        <div className="sa-modal-url"><Icon name="link" size={14} />{url}</div>
+        <div className="sa-modal-acts">
+          <button className="sa-btn primary" onClick={async () => { try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* noop */ } }}>{copied ? "コピーしました" : "リンクをコピー"}</button>
+          <button className="sa-btn ghost" onClick={onClose}>閉じる</button>
+        </div>
       </div>
     </div>
   );

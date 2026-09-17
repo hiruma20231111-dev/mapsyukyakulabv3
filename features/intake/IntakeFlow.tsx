@@ -23,10 +23,20 @@ function emptyAnswers(): Answers {
   return a;
 }
 
-export function IntakeFlow({ creds, onDone }: { creds?: IntakeCreds; onDone?: () => void }) {
+export function IntakeFlow({
+  creds,
+  onDone,
+  initial,
+}: {
+  creds?: IntakeCreds;
+  onDone?: () => void;
+  initial?: { storeName?: string; answers?: Partial<Answers> };
+}) {
   const [step, setStep] = useState<Step>("input");
-  const [storeName, setStoreName] = useState("");
-  const [answers, setAnswers] = useState<Answers>(emptyAnswers);
+  const [storeName, setStoreName] = useState(initial?.storeName || "");
+  const [answers, setAnswers] = useState<Answers>(
+    initial?.answers ? { ...emptyAnswers(), ...initial.answers } : emptyAnswers(),
+  );
   const [site, setSite] = useState("");
   const [others, setOthers] = useState("");
   const [aiBusy, setAiBusy] = useState(false);

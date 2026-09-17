@@ -71,7 +71,7 @@ function labelOf(catKey: CategoryKey, subKey: string, score: number | null | und
 function aioStatus(ratio: number): string {
   if (ratio >= 0.8) return "選ばれやすい";
   if (ratio >= 0.5) return "あと一歩";
-  return "これから";
+  return "これから育てる";
 }
 
 export function buildResultView(

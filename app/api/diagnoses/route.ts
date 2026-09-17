@@ -14,6 +14,7 @@ export async function GET() {
       return {
         slug: r.slug, storeName: r.storeName, total: v.total, rank: v.rank, ts: r.ts, path: `/d/${r.slug}`,
         views: s.views, consults: s.consults, lastTs: s.lastTs,
+        answers: r.answers,
       };
     }),
   );

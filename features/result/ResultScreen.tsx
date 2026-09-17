@@ -221,7 +221,7 @@ export function ResultScreen({
           <span className="mini" />
           <span className="txt">
             <span className="t1">AI検索での見え方</span>
-            <span className="t2">「{data.aio.query}」で選ばれるには、{data.aio.status}</span>
+            <span className="t2">ChatGPTやGoogleのAIに「近くのおすすめのお店は？」と聞かれたときの選ばれやすさ</span>
           </span>
           <span className="stat">{data.aio.status}</span>
         </div>

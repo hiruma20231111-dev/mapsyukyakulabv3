@@ -5,11 +5,11 @@ import { Icon } from "@/design/icons";
 
 interface Msg { role: "user" | "ai"; text: string }
 
-const SUGGESTS = ["まず何から始めればいい？", "写真は何を撮ればいい？", "クチコミへの返信のコツは？"];
+const SUGGESTS = ["集客をもっと増やしたい", "何から手をつけるか迷ってる", "今のままで大丈夫か不安"];
 
 export function ConsultV3({ slug, storeName }: { slug: string; storeName: string }) {
   const [msgs, setMsgs] = useState<Msg[]>([
-    { role: "ai", text: `${storeName ? storeName + "さん、" : ""}こんにちは。診断を拝見しました。土台はできているので、あとは“発信・運用”を少しずつ動かすだけです。\nどこから始めたいか、気になることを何でも聞いてください。` },
+    { role: "ai", text: `${storeName ? storeName + "さん、" : ""}こんにちは。診断を見せてもらいました。\nいま、いちばん気になっているのはどんなことですか？` },
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
