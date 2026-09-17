@@ -46,6 +46,7 @@ export function IntakeFlow({
   const [copied, setCopied] = useState(false);
   const [weights, setWeights] = useState<Partial<Record<CategoryKey, number>> | undefined>(undefined);
   const [autoCreds, setAutoCreds] = useState<IntakeCreds | undefined>(undefined);
+  const [expiryDays, setExpiryDays] = useState<number>(90); // 既定90日
 
   // 管理画面で設定した配点（あれば）を発行時に反映。
   useEffect(() => {
@@ -108,7 +109,7 @@ export function IntakeFlow({
       const r = await fetch("/api/issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeName, answers, query: storeName, weights, creds: eff ? { invite: eff.invite, key: eff.key } : undefined }),
+        body: JSON.stringify({ storeName, answers, query: storeName, weights, expiryDays, creds: eff ? { invite: eff.invite, key: eff.key } : undefined }),
       });
       const d = await r.json();
       const path: string = d?.path || (d?.slug ? `/d/${d.slug}` : "");
@@ -252,6 +253,21 @@ export function IntakeFlow({
           ))}
         </div>
       ))}
+
+      <div className="in-cat">
+        <div className="in-cat-head">
+          <span className="in-cat-ic"><Icon name="calendar" size={17} /></span>
+          <span className="in-cat-name">有効期限</span>
+        </div>
+        <div className="in-sub" style={{ borderTop: 0 }}>
+          <div className="in-sub-lbl">この診断ページを公開する期間</div>
+          <div className="in-chips">
+            {([[7, "7日"], [30, "30日"], [90, "90日"], [0, "無期限"]] as const).map(([d, label]) => (
+              <button key={d} type="button" className={`in-chip${expiryDays === d ? " on" : ""}`} onClick={() => setExpiryDays(d)}>{label}</button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div className="in-cta">
         <button className="btn" onClick={() => setStep("preview")} disabled={!canIssue}>

@@ -12,10 +12,13 @@ export interface PublicDiagnosis {
   weights?: Partial<Record<CategoryKey, number>>;
   /** AI相談用の資格情報（サーバ側のみ・クライアントには渡さない）。営業のGemini invite/key。 */
   creds?: { invite?: string; key?: string };
+  /** 有効期限（epoch ms）。0/未設定は無期限。 */
+  expiresAt?: number;
   ts: number;
 }
 
-const TTL = 7776000; // 90日
+const TTL = 7776000; // 90日（既定）
+const TTL_MAX = 315360000; // 無期限相当（10年）
 // Redis未接続時のフォールバック。dev の HMR/モジュール再評価をまたいで共有するため globalThis に保持。
 const g = globalThis as unknown as { __maplabPubDiag?: Map<string, PublicDiagnosis> };
 const mem: Map<string, PublicDiagnosis> = g.__maplabPubDiag ?? (g.__maplabPubDiag = new Map());
@@ -36,14 +39,17 @@ export async function savePublicDiagnosis(
   input: Omit<PublicDiagnosis, "slug" | "ts">,
 ): Promise<string> {
   const slug = slugify(input.storeName);
-  const rec: PublicDiagnosis = { ...input, slug, ts: Date.now() };
+  const now = Date.now();
+  const rec: PublicDiagnosis = { ...input, slug, ts: now };
+  // 期限に合わせて Redis TTL を決める（無期限は10年）。
+  const ttl = rec.expiresAt && rec.expiresAt > now ? Math.max(60, Math.ceil((rec.expiresAt - now) / 1000)) : TTL_MAX;
   const c = getClient();
   if (c) {
     try {
-      await c.set(`pubdiag:${slug}`, JSON.stringify(rec), "EX", TTL);
+      await c.set(`pubdiag:${slug}`, JSON.stringify(rec), "EX", ttl);
       await c.lpush(INDEX_KEY, slug);
       await c.ltrim(INDEX_KEY, 0, 499);
-      await c.expire(INDEX_KEY, TTL);
+      await c.expire(INDEX_KEY, TTL_MAX);
       return slug;
     } catch {
       /* フォールバックへ */
@@ -51,6 +57,21 @@ export async function savePublicDiagnosis(
   }
   mem.set(slug, rec);
   return slug;
+}
+
+/** 診断を削除（レコード・インデックス・稼働状況）。 */
+export async function deletePublicDiagnosis(slug: string): Promise<void> {
+  if (!slug) return;
+  const c = getClient();
+  if (c) {
+    try {
+      await c.del(`pubdiag:${slug}`);
+      await c.lrem(INDEX_KEY, 0, slug);
+      await c.del(`pubdiag:stat:${slug}`);
+    } catch { /* フォールバックも消す */ }
+  }
+  mem.delete(slug);
+  statMem.delete(slug);
 }
 
 const INDEX_KEY = "pubdiag:index";
@@ -113,16 +134,22 @@ export async function listRecentDiagnoses(limit = 50): Promise<PublicDiagnosis[]
 }
 
 /** slug から公開診断を取得（無ければ null）。 */
+function notExpired(rec: PublicDiagnosis | null): PublicDiagnosis | null {
+  if (!rec) return null;
+  if (rec.expiresAt && rec.expiresAt > 0 && Date.now() > rec.expiresAt) return null; // 期限切れ
+  return rec;
+}
+
 export async function getPublicDiagnosis(slug: string): Promise<PublicDiagnosis | null> {
   if (!slug) return null;
   const c = getClient();
   if (c) {
     try {
       const s = await c.get(`pubdiag:${slug}`);
-      if (s) return JSON.parse(s) as PublicDiagnosis;
+      if (s) return notExpired(JSON.parse(s) as PublicDiagnosis);
     } catch {
       /* フォールバックへ */
     }
   }
-  return mem.get(slug) ?? null;
+  return notExpired(mem.get(slug) ?? null);
 }

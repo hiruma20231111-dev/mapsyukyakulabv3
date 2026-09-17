@@ -48,7 +48,10 @@
 /* 発行カード（アクション付き） */
 .sa-card2{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-card); padding:12px 13px 10px; box-shadow:var(--sh1); }
 .sa-row2-top{ display:flex; align-items:center; gap:12px; }
-.sa-acts{ display:flex; gap:7px; margin-top:11px; padding-top:10px; border-top:1px solid var(--line); }
+.sa-del{ width:26px; height:26px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--faint); font-size:12px; font-weight:900; cursor:pointer; flex:0 0 auto; margin-left:2px; }
+.sa-del:hover{ border-color:var(--danger); color:var(--danger); }
+.sa-row-exp{ font-size:10.5px; color:var(--muted); font-weight:700; margin:6px 0 0; }
+.sa-acts{ display:flex; gap:7px; margin-top:9px; padding-top:10px; border-top:1px solid var(--line); }
 .sa-act{ flex:1; display:inline-flex; align-items:center; justify-content:center; gap:5px; font-size:12px; font-weight:800; color:var(--accent-deep); background:var(--accent-soft); border:0; border-radius:var(--r-sm); padding:9px 6px; cursor:pointer; text-decoration:none; font-family:inherit; }
 .sa-act:hover{ filter:brightness(.97); }
 

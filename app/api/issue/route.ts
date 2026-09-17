@@ -21,12 +21,16 @@ export async function POST(request: Request) {
     b?.creds && typeof b.creds === "object"
       ? { invite: typeof b.creds.invite === "string" ? b.creds.invite : undefined, key: typeof b.creds.key === "string" ? b.creds.key : undefined }
       : undefined;
+  // 期限（日数）。0/未指定は無期限。
+  const expiryDays = Number(b?.expiryDays) || 0;
+  const expiresAt = expiryDays > 0 ? Date.now() + expiryDays * 86400000 : 0;
   const slug = await savePublicDiagnosis({
     storeName,
     answers,
     query: typeof b?.query === "string" ? b.query : undefined,
     weights: b?.weights && typeof b.weights === "object" ? b.weights : undefined,
     creds,
+    expiresAt,
   });
   return json({ ok: true, slug, path: `/d/${slug}` });
 }

@@ -8,7 +8,14 @@ import { DIAG_CATEGORIES, DEFAULT_WEIGHTS, type CategoryKey } from "@/content/di
 
 type View = "dashboard" | "new" | "settings";
 type ReAnswers = Partial<Record<CategoryKey, Record<string, number | null>>>;
-interface ListItem { slug: string; storeName: string; total: number; rank: string; ts: number; path: string; views?: number; consults?: number; lastTs?: number; answers?: ReAnswers }
+interface ListItem { slug: string; storeName: string; total: number; rank: string; ts: number; path: string; views?: number; consults?: number; lastTs?: number; expiresAt?: number; answers?: ReAnswers }
+
+function expiryLabel(expiresAt?: number): string {
+  if (!expiresAt) return "無期限";
+  const d = Math.ceil((expiresAt - Date.now()) / 86400000);
+  if (d <= 0) return "期限切れ";
+  return `残り${d}日`;
+}
 type Weights = Record<CategoryKey, number>;
 
 function relTime(ts?: number): string {
@@ -40,6 +47,12 @@ export function SalesApp() {
   useEffect(() => { loadList(); refreshAi(); }, []);
 
   const backToDash = () => { setView("dashboard"); setReissue(null); refreshAi(); loadList(); };
+
+  const del = async (it: ListItem) => {
+    if (!window.confirm(`「${it.storeName}」の診断を削除します。元に戻せません。よろしいですか？`)) return;
+    try { await fetch(`/api/diagnoses?slug=${encodeURIComponent(it.slug)}`, { method: "DELETE" }); } catch { /* noop */ }
+    loadList();
+  };
 
   if (view === "new") return <IntakeFlow onDone={backToDash} initial={reissue ?? undefined} />;
   if (view === "settings") return <Settings onBack={backToDash} />;
@@ -103,7 +116,9 @@ export function SalesApp() {
                   </div>
                   <span className="sa-row-rank">{it.rank}</span>
                   <span className="sa-row-score">{it.total}</span>
+                  <button className="sa-del" onClick={() => del(it)} aria-label="削除" title="削除">✕</button>
                 </div>
+                <div className="sa-row-exp">公開期限：{expiryLabel(it.expiresAt)}</div>
                 <div className="sa-acts">
                   <button className="sa-act" onClick={() => setResultItem(it)}><Icon name="search" size={15} />結果を見る</button>
                   <button className="sa-act" onClick={() => setQrItem(it)}><Icon name="link" size={15} />QR / URL</button>
