@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   }
 
   // 診断コンテキスト（弱い項目＝伸びしろの大きい順）。
-  const view = buildResultView(rec.storeName, rec.answers, { query: rec.query, weights: rec.weights });
+  const view = buildResultView(rec.storeName, rec.answers, { query: rec.query, weights: rec.weights, descText: rec.descText, keywords: rec.keywords });
   const weak = [...view.categories]
     .sort((a, b2) => a.ratio - b2.ratio)
     .slice(0, 3)

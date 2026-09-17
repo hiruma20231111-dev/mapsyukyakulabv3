@@ -14,6 +14,10 @@ export interface PublicDiagnosis {
   creds?: { invite?: string; key?: string };
   /** 有効期限（epoch ms）。0/未設定は無期限。 */
   expiresAt?: number;
+  /** 店舗の説明文（コンテンツ採点＋結果表示用）。 */
+  descText?: string;
+  /** 説明文の対象キーワード（カンマ区切り）。 */
+  keywords?: string;
   ts: number;
 }
 

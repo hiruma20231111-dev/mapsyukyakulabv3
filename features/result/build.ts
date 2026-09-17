@@ -2,6 +2,7 @@
 import { DIAG_CATEGORIES, type CategoryKey } from "@/content/diagnosis-v3";
 import { RESULT_COPY, verdictOf } from "@/content/result-copy";
 import { scoreV3, type V3Answers, type Rank } from "@/lib/domain/score";
+import { analyzeDescription } from "@/lib/domain/description";
 import type { IconName } from "@/design/icons";
 
 export type Judge = "o" | "t" | "x";
@@ -43,7 +44,8 @@ export interface ResultView {
 }
 
 const ICON: Record<CategoryKey, IconName> = {
-  profile: "list",
+  basic: "list",
+  content: "book",
   photo: "camera",
   review: "chat",
   post: "mega",
@@ -77,7 +79,7 @@ function aioStatus(ratio: number): string {
 export function buildResultView(
   storeName: string,
   answers: V3Answers,
-  opts?: { query?: string; weights?: Partial<Record<CategoryKey, number>> },
+  opts?: { query?: string; weights?: Partial<Record<CategoryKey, number>>; descText?: string; keywords?: string },
 ): ResultView {
   const scored = scoreV3(answers, opts?.weights);
   const byKey = new Map(scored.categories.map((c) => [c.key, c]));
@@ -87,12 +89,15 @@ export function buildResultView(
     const copy = RESULT_COPY[cat.key];
     const subs: SubView[] = cat.subs.map((sub) => {
       const v = answers[cat.key]?.[sub.key];
-      return {
-        label: sub.label,
-        criteria: sub.criteria,
-        current: labelOf(cat.key, sub.key, v),
-        judge: judgeOf(v),
-      };
+      let current: string;
+      if (sub.input === "text") {
+        // 説明文サブ：貼り付けたテキストから「文字数・キーワード」を現状として示す。
+        const a = analyzeDescription(opts?.descText || "", opts?.keywords);
+        current = a.length === 0 ? "未設定" : `${a.length}字${a.keywordTotal ? `・キーワード${a.keywordHits}/${a.keywordTotal}` : ""}`;
+      } else {
+        current = labelOf(cat.key, sub.key, v);
+      }
+      return { label: sub.label, criteria: sub.criteria, current, judge: judgeOf(v) };
     });
     return {
       key: cat.key,

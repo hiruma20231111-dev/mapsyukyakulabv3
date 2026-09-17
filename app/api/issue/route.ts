@@ -31,6 +31,8 @@ export async function POST(request: Request) {
     weights: b?.weights && typeof b.weights === "object" ? b.weights : undefined,
     creds,
     expiresAt,
+    descText: typeof b?.descText === "string" ? b.descText.slice(0, 1500) : undefined,
+    keywords: typeof b?.keywords === "string" ? b.keywords.slice(0, 200) : undefined,
   });
   return json({ ok: true, slug, path: `/d/${slug}` });
 }

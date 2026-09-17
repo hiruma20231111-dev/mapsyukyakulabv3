@@ -19,7 +19,7 @@ export default async function DiagnosisResultPage({ params }: { params: { slug: 
     );
   }
   recordEvent(params.slug, "views").catch(() => {});
-  const data = buildResultView(rec.storeName, rec.answers, { query: rec.query, weights: rec.weights });
+  const data = buildResultView(rec.storeName, rec.answers, { query: rec.query, weights: rec.weights, descText: rec.descText, keywords: rec.keywords });
   return (
     <main className="app">
       <OwnerView data={data} slug={params.slug} />

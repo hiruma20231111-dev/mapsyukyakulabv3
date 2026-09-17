@@ -5,13 +5,14 @@ import QRCode from "qrcode";
 import { Icon, type IconName } from "@/design/icons";
 import { DIAG_CATEGORIES, type CategoryKey } from "@/content/diagnosis-v3";
 import { ResultScreen, buildResultView } from "@/features/result";
+import { analyzeDescription, DESC_MAX } from "@/lib/domain/description";
 
 type Step = "input" | "preview" | "issuing" | "issued";
 type CatAns = Record<string, number | null>;
 type Answers = Record<CategoryKey, CatAns>;
 
 const ICON: Record<CategoryKey, IconName> = {
-  profile: "list", photo: "camera", review: "chat", post: "mega", citation: "link",
+  basic: "list", content: "book", photo: "camera", review: "chat", post: "mega", citation: "link",
 };
 
 /** AIの精査に使う任意のGemini資格情報（招待 or キー）。無ければ手入力採点。 */
@@ -47,6 +48,14 @@ export function IntakeFlow({
   const [weights, setWeights] = useState<Partial<Record<CategoryKey, number>> | undefined>(undefined);
   const [autoCreds, setAutoCreds] = useState<IntakeCreds | undefined>(undefined);
   const [expiryDays, setExpiryDays] = useState<number>(90); // 既定90日
+  const [descText, setDescText] = useState("");
+  const [keywords, setKeywords] = useState("");
+
+  // 店舗の説明文 → コンテンツの「説明文」サブ得点を自動計算して反映。
+  useEffect(() => {
+    const score = analyzeDescription(descText, keywords).score;
+    setAnswers((prev) => ({ ...prev, content: { ...prev.content, description: descText.trim() ? score : null } }));
+  }, [descText, keywords]);
 
   // 管理画面で設定した配点（あれば）を発行時に反映。
   useEffect(() => {
@@ -109,7 +118,7 @@ export function IntakeFlow({
       const r = await fetch("/api/issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storeName, answers, query: storeName, weights, expiryDays, creds: eff ? { invite: eff.invite, key: eff.key } : undefined }),
+        body: JSON.stringify({ storeName, answers, query: storeName, weights, expiryDays, descText, keywords, creds: eff ? { invite: eff.invite, key: eff.key } : undefined }),
       });
       const d = await r.json();
       const path: string = d?.path || (d?.slug ? `/d/${d.slug}` : "");
@@ -237,18 +246,36 @@ export function IntakeFlow({
           {cat.subs.map((sub) => (
             <div className="in-sub" key={sub.key}>
               <div className="in-sub-lbl">{sub.label}<span style={{ color: "var(--faint)", fontWeight: 600 }}>（基準：{sub.criteria}）</span></div>
-              <div className="in-chips">
-                {sub.options.map((opt) => (
-                  <button
-                    key={opt.label}
-                    className={`in-chip${answers[cat.key][sub.key] === opt.score ? " on" : ""}`}
-                    onClick={() => setSub(cat.key, sub.key, opt.score)}
-                    type="button"
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              {sub.input === "text" ? (
+                <div>
+                  <textarea className="in-input" rows={4} value={descText} onChange={(e) => setDescText(e.target.value)} placeholder="GBPの店舗説明文を貼り付け（〜750字）。無い場合は空欄でOK" />
+                  <input className="in-input small" style={{ marginTop: 8 }} value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="対象キーワード（例：買取 京橋 大吉）スペース/カンマ区切り" />
+                  {(() => {
+                    const a = analyzeDescription(descText, keywords);
+                    const cls = (ok: boolean, warn: boolean) => (ok ? "ok" : warn ? "warn" : "bad");
+                    return (
+                      <div className="in-analysis">
+                        <span className={`in-tagm ${cls(a.length >= 300, a.length > 0)}`}>文字数 {a.length}/{DESC_MAX}</span>
+                        {a.keywordTotal > 0 && <span className={`in-tagm ${cls(a.keywordHits >= a.keywordTotal, a.keywordHits > 0)}`}>キーワード {a.keywordHits}/{a.keywordTotal}含有</span>}
+                        <span className="in-tagm score">説明文スコア {a.score}</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <div className="in-chips">
+                  {sub.options.map((opt) => (
+                    <button
+                      key={opt.label}
+                      className={`in-chip${answers[cat.key][sub.key] === opt.score ? " on" : ""}`}
+                      onClick={() => setSub(cat.key, sub.key, opt.score)}
+                      type="button"
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

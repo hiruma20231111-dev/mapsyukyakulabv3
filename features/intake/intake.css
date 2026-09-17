@@ -27,6 +27,13 @@
 .in-sub:first-of-type{ border-top:0; }
 .in-sub-lbl{ font-size:12.5px; font-weight:700; color:var(--ink); margin:0 0 6px; }
 .in-chips{ display:flex; gap:6px; flex-wrap:wrap; }
+textarea.in-input{ resize:vertical; min-height:76px; line-height:1.6; font-family:inherit; }
+.in-analysis{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.in-tagm{ font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; background:var(--bg); border:1px solid var(--line); color:var(--muted); }
+.in-tagm.ok{ background:var(--accent-soft); border-color:#cfeae5; color:var(--accent-deep); }
+.in-tagm.warn{ background:var(--warn-soft,#fbf1de); border-color:#f0dcae; color:#8a5f12; }
+.in-tagm.bad{ background:var(--danger-soft,#fdeceb); border-color:#f4cfcb; color:#a23b30; }
+.in-tagm.score{ background:var(--navy); border-color:var(--navy); color:#fff; }
 .in-chip{ font-size:12px; font-weight:700; padding:6px 11px; border-radius:999px; border:1px solid var(--line); color:var(--muted); background:var(--surface); cursor:pointer; font-family:inherit; transition:all .12s var(--ease); }
 .in-chip:hover{ border-color:var(--accent); }
 .in-chip.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
