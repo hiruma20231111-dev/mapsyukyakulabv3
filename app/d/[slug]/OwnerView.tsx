@@ -14,6 +14,10 @@ export function OwnerView({ data, slug }: { data: ResultView; slug: string }) {
   const key = `maplab_manual_seen:${slug}`;
 
   useEffect(() => {
+    // 営業がダッシュボードのポップアップで見るときは ?v=sales でマニュアルを飛ばして結果を直接表示。
+    try {
+      if (new URLSearchParams(window.location.search).get("v") === "sales") { setShowManual(false); return; }
+    } catch { /* noop */ }
     let seen = false;
     try { seen = localStorage.getItem(key) === "1"; } catch { /* noop */ }
     setShowManual(!seen);

@@ -63,6 +63,14 @@
 .sa-modal-url svg{ color:var(--accent-deep); flex:0 0 auto; }
 .sa-modal-acts{ display:flex; gap:8px; }
 
+/* 診断結果ポップアップ（iframe） */
+.sa-rmodal-mask{ position:fixed; inset:0; background:rgba(8,24,32,.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); display:grid; place-items:center; z-index:35; padding:16px; }
+.sa-rmodal{ width:100%; max-width:430px; height:88vh; background:var(--surface); border-radius:18px; overflow:hidden; box-shadow:var(--sh2); display:flex; flex-direction:column; }
+.sa-rmodal-head{ display:flex; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid var(--line); flex:0 0 auto; }
+.sa-rmodal-name{ font-size:13px; font-weight:900; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sa-rmodal-x{ width:30px; height:30px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:14px; font-weight:900; cursor:pointer; flex:0 0 auto; }
+.sa-rmodal-frame{ flex:1; width:100%; border:0; background:var(--bg); }
+
 /* 設定 */
 .sa-field{ margin:0 0 16px; }
 .sa-field label{ display:block; font-size:12.5px; font-weight:800; margin:0 0 6px; }

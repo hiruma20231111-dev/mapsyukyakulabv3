@@ -27,6 +27,7 @@ export function SalesApp() {
   const [items, setItems] = useState<ListItem[] | null>(null);
   const [keyReady, setKeyReady] = useState(false);
   const [qrItem, setQrItem] = useState<ListItem | null>(null);
+  const [resultItem, setResultItem] = useState<ListItem | null>(null);
   const [reissue, setReissue] = useState<{ storeName?: string; answers?: ReAnswers } | null>(null);
 
   const loadList = () =>
@@ -104,7 +105,7 @@ export function SalesApp() {
                   <span className="sa-row-score">{it.total}</span>
                 </div>
                 <div className="sa-acts">
-                  <a className="sa-act" href={it.path} target="_blank" rel="noreferrer"><Icon name="search" size={15} />結果を見る</a>
+                  <button className="sa-act" onClick={() => setResultItem(it)}><Icon name="search" size={15} />結果を見る</button>
                   <button className="sa-act" onClick={() => setQrItem(it)}><Icon name="link" size={15} />QR / URL</button>
                   <button className="sa-act" onClick={() => { setReissue({ storeName: it.storeName, answers: it.answers }); setView("new"); }}><Icon name="spark" size={15} />再診断</button>
                 </div>
@@ -115,6 +116,22 @@ export function SalesApp() {
       </div>
 
       {qrItem && <QrModal item={qrItem} onClose={() => setQrItem(null)} />}
+      {resultItem && <ResultModal item={resultItem} onClose={() => setResultItem(null)} />}
+    </div>
+  );
+}
+
+// ---- 診断結果ポップアップ（営業がダッシュボードから確認）----
+function ResultModal({ item, onClose }: { item: ListItem; onClose: () => void }) {
+  return (
+    <div className="sa-rmodal-mask" onClick={onClose}>
+      <div className="sa-rmodal" onClick={(e) => e.stopPropagation()}>
+        <div className="sa-rmodal-head">
+          <span className="sa-rmodal-name">{item.storeName}</span>
+          <button className="sa-rmodal-x" onClick={onClose} aria-label="閉じる">✕</button>
+        </div>
+        <iframe className="sa-rmodal-frame" src={`${item.path}?v=sales`} title={`${item.storeName} の診断結果`} />
+      </div>
     </div>
   );
 }
