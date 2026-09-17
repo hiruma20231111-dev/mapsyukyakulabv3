@@ -20,6 +20,13 @@
 .cv-av::after{ content:""; position:absolute; inset:5px; border-radius:999px; background:var(--surface); }
 .cv-bubble{ background:var(--surface); border:1px solid var(--line); border-radius:4px 14px 14px 14px; padding:12px 14px; font-size:calc(13px * var(--cvfs, 1)); line-height:1.95; box-shadow:var(--sh1); white-space:pre-wrap; }
 .cv-msg.ai .cv-bubble{ letter-spacing:.01em; }
+/* 強調：Google色の虹色アニメ下線 */
+.cv-hl{ font-weight:800; color:var(--ink); padding-bottom:1px;
+  background-image:linear-gradient(90deg,#4285f4,#ea4335,#fbbc05,#34a853,#4285f4);
+  background-size:200% 3px; background-repeat:no-repeat; background-position:0% 100%;
+  border-radius:1px; animation:cv-rainbow 2.6s linear infinite; }
+@keyframes cv-rainbow{ from{ background-position:0% 100%; } to{ background-position:200% 100%; } }
+@media (prefers-reduced-motion:reduce){ .cv-hl{ animation:none; background-position:50% 100%; } }
 .cv-msg.user .cv-bubble{ background:var(--accent); border-color:var(--accent); color:#fff; border-radius:14px 4px 14px 14px; }
 .cv-note{ font-size:11px; color:var(--muted); text-align:center; padding:8px 12px; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
 .cv-typing{ display:inline-flex; gap:4px; padding:2px 0; }

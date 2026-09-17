@@ -5,6 +5,13 @@ import { Icon } from "@/design/icons";
 
 interface Msg { role: "user" | "ai"; text: string }
 
+// **強調** を虹色アニメ下線のハイライトに変換（AIメッセージ用）。
+function renderHl(text: string) {
+  return text.split(/\*\*(.+?)\*\*/g).map((p, i) =>
+    i % 2 === 1 ? <span key={i} className="cv-hl">{p}</span> : <span key={i}>{p}</span>,
+  );
+}
+
 const SUGGESTS = ["集客をもっと増やしたい", "何から手をつけるか迷ってる", "今のままで大丈夫か不安"];
 
 export function ConsultV3({ slug, storeName }: { slug: string; storeName: string }) {
@@ -80,7 +87,7 @@ export function ConsultV3({ slug, storeName }: { slug: string; storeName: string
         {msgs.map((m, i) => (
           <div className={`cv-msg ${m.role}`} key={i}>
             {m.role === "ai" && <span className="cv-av" />}
-            <div className="cv-bubble">{m.text}</div>
+            <div className="cv-bubble">{m.role === "ai" ? renderHl(m.text) : m.text}</div>
           </div>
         ))}
         {busy && (
