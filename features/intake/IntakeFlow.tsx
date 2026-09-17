@@ -260,11 +260,15 @@ export function IntakeFlow({
           <span className="in-cat-name">有効期限</span>
         </div>
         <div className="in-sub" style={{ borderTop: 0 }}>
-          <div className="in-sub-lbl">この診断ページを公開する期間</div>
-          <div className="in-chips">
-            {([[7, "7日"], [30, "30日"], [90, "90日"], [0, "無期限"]] as const).map(([d, label]) => (
-              <button key={d} type="button" className={`in-chip${expiryDays === d ? " on" : ""}`} onClick={() => setExpiryDays(d)}>{label}</button>
-            ))}
+          <div className="in-sub-lbl">この診断ページを公開する日数（0で無期限）</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              className="in-input" style={{ maxWidth: 120 }} type="number" min={0} max={3650} inputMode="numeric"
+              value={expiryDays}
+              onChange={(e) => setExpiryDays(Math.max(0, Math.min(3650, Math.floor(Number(e.target.value) || 0))))}
+            />
+            <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 700 }}>日</span>
+            <span style={{ fontSize: 11.5, color: "var(--faint)" }}>{expiryDays > 0 ? `${expiryDays}日後に非公開` : "無期限"}</span>
           </div>
         </div>
       </div>
